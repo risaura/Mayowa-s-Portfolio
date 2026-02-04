@@ -1,0 +1,200 @@
+// Main application
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Set canvas size
+canvas.width = 800;
+canvas.height = 600;
+
+// Initialize scene and character
+const scene = new Scene(canvas);
+const character = new Character(canvas);
+
+// Initialize wooden signs
+const aboutSign = new WoodenSign(50, 50, "About Me", () => {
+    document.getElementById('aboutModal').style.display = 'block';
+});
+
+const gamesSign = new WoodenSign(220, 50, "Games", () => {
+    document.getElementById('gamesModal').style.display = 'block';
+});
+
+const signs = [aboutSign, gamesSign];
+
+// Current active game
+let currentGame = null;
+let animationId = null;
+let gameAnimationId = null;
+
+// Mouse handling for main canvas
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    let hoveringSomething = false;
+    signs.forEach(sign => {
+        sign.hovered = sign.isMouseOver(mouseX, mouseY);
+        if (sign.hovered) {
+            hoveringSomething = true;
+        }
+    });
+    
+    canvas.style.cursor = hoveringSomething ? 'pointer' : 'default';
+});
+
+canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    signs.forEach(sign => {
+        if (sign.isMouseOver(mouseX, mouseY)) {
+            sign.callback();
+        }
+    });
+});
+
+// Modal controls
+document.getElementById('closeAbout').addEventListener('click', () => {
+    document.getElementById('aboutModal').style.display = 'none';
+});
+
+document.getElementById('closeGames').addEventListener('click', () => {
+    document.getElementById('gamesModal').style.display = 'none';
+});
+
+document.getElementById('closeGame').addEventListener('click', () => {
+    closeGameModal();
+});
+
+// Close modals when clicking outside
+window.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal')) {
+        e.target.style.display = 'none';
+        if (e.target.id === 'gameModal') {
+            closeGameModal();
+        }
+    }
+});
+
+// Game button handlers
+document.getElementById('playFlappy').addEventListener('click', () => {
+    startGame('Flappy Bird');
+    document.getElementById('gamesModal').style.display = 'none';
+});
+
+document.getElementById('playSnake').addEventListener('click', () => {
+    startGame('Snake');
+    document.getElementById('gamesModal').style.display = 'none';
+});
+
+document.getElementById('playPong').addEventListener('click', () => {
+    startGame('Pong');
+    document.getElementById('gamesModal').style.display = 'none';
+});
+
+document.getElementById('restartGame').addEventListener('click', () => {
+    if (currentGame) {
+        currentGame.reset();
+    }
+});
+
+function startGame(gameName) {
+    const miniCanvas = document.getElementById('miniGameCanvas');
+    const gameTitle = document.getElementById('gameTitle');
+    const gameInstructions = document.getElementById('gameInstructions');
+    
+    // Clean up previous game
+    if (currentGame && currentGame.cleanup) {
+        currentGame.cleanup();
+    }
+    if (gameAnimationId) {
+        cancelAnimationFrame(gameAnimationId);
+    }
+    
+    gameTitle.textContent = gameName;
+    
+    // Create new game instance
+    switch(gameName) {
+        case 'Flappy Bird':
+            currentGame = new FlappyBird(miniCanvas);
+            gameInstructions.innerHTML = 'Click or press SPACE to flap!<br>Avoid the pipes!';
+            runFlappyBird();
+            break;
+        case 'Snake':
+            currentGame = new Snake(miniCanvas);
+            gameInstructions.innerHTML = 'Use arrow keys to move<br>Eat apples to grow!';
+            runSnake();
+            break;
+        case 'Pong':
+            currentGame = new Pong(miniCanvas);
+            gameInstructions.innerHTML = 'Use ↑↓ or W/S keys to move<br>First to 5 wins!';
+            runPong();
+            break;
+    }
+    
+    document.getElementById('gameModal').style.display = 'block';
+    currentGame.updateScoreDisplay();
+}
+
+function closeGameModal() {
+    document.getElementById('gameModal').style.display = 'none';
+    if (currentGame && currentGame.cleanup) {
+        currentGame.cleanup();
+    }
+    if (gameAnimationId) {
+        cancelAnimationFrame(gameAnimationId);
+    }
+    currentGame = null;
+}
+
+function runFlappyBird() {
+    function loop() {
+        currentGame.update();
+        currentGame.draw();
+        gameAnimationId = requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+function runSnake() {
+    let lastTimestamp = 0;
+    function loop(timestamp) {
+        currentGame.update(timestamp);
+        currentGame.draw();
+        gameAnimationId = requestAnimationFrame(loop);
+    }
+    gameAnimationId = requestAnimationFrame(loop);
+}
+
+function runPong() {
+    function loop() {
+        currentGame.update();
+        currentGame.draw();
+        gameAnimationId = requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+// Main game loop for portfolio scene
+function animate() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw scene
+    scene.drawSky();
+    scene.drawGround();
+    
+    // Update and draw character
+    character.update();
+    character.draw();
+    
+    // Draw signs
+    signs.forEach(sign => sign.draw(ctx));
+    
+    animationId = requestAnimationFrame(animate);
+}
+
+// Start the animation
+animate();

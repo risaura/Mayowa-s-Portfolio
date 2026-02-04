@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- About Me Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeAbout">&times;</span>
+            <h2>About Me</h2>
+            <p>Hello! I'm a passionate game developer who loves creating interactive experiences.</p>
+            <p>I specialize in game design, programming, and bringing creative ideas to life.</p>
+            <p>Feel free to try out my games below!</p>
+        </div>
+    </div>
+
+    <!-- Games Menu Modal -->
+    <div id="gamesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeGames">&times;</span>
+            <h2>My Games</h2>
+            <div class="games-menu">
+                <button class="game-btn" id="playFlappy">🐦 Flappy Bird</button>
+                <button class="game-btn" id="playSnake">🐍 Snake</button>
+                <button class="game-btn" id="playPong">🏓 Pong</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Container Modal -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content game-modal-content">
+            <span class="close" id="closeGame">&times;</span>
+            <h2 id="gameTitle">Game</h2>
+            <div id="gameScore">Score: 0</div>
+            <canvas id="miniGameCanvas"></canvas>
+            <div id="gameInstructions"></div>
+            <button id="restartGame" class="game-btn">Restart</button>
+        </div>
+    </div>
+
+    <script src="character.js"></script>
+    <script src="flappyBird.js"></script>
+    <script src="snake.js"></script>
+    <script src="pong.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
