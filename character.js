@@ -3,33 +3,27 @@ class SceneManager {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.cameraX = 0;
-        this.worldWidth = 4000;
+        this.worldWidth = 3000;
         this.time = 0;
+        this.isNightTime = false;
+        
+        // Toggle day/night every 30 seconds
+        setInterval(() => {
+            this.isNightTime = !this.isNightTime;
+        }, 30000);
         
         this.sections = {
             center: { x: 0, width: 1200, name: 'Home' },
             aboutMe: { x: -1200, width: 1200, name: 'About Me' },
-            games: { x: 1200, width: 2800, name: 'Games' }
+            games: { x: 1200, width: 1800, name: 'Games' }
         };
         
         this.currentSection = 'center';
-        
-        // Trees data
-        this.trees = [
-            { x: -800, scale: 1.2 },
-            { x: -400, scale: 1 },
-            { x: 200, scale: 1.1 },
-            { x: 600, scale: 0.9 },
-            { x: 1000, scale: 1.3 },
-            { x: 1400, scale: 1 },
-            { x: 1800, scale: 1.1 },
-            { x: 2200, scale: 1.2 }
-        ];
     }
 
     moveCamera(dx) {
         this.cameraX += dx;
-        this.cameraX = Math.max(-1200, Math.min(2800, this.cameraX));
+        this.cameraX = Math.max(-1200, Math.min(1800, this.cameraX));
         
         const characterWorldX = this.cameraX;
         
@@ -64,170 +58,212 @@ class SceneManager {
     drawBackground() {
         this.time += 0.01;
         
-        // Sky - pixel art style gradient
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        gradient.addColorStop(0, '#87ceeb');
-        gradient.addColorStop(0.6, '#b4d7f1');
-        gradient.addColorStop(1, '#d4e8f4');
-        this.ctx.fillStyle = gradient;
+        // Room walls
+        const wallColor = this.isNightTime ? '#3a4a5a' : '#e8dcc8';
+        this.ctx.fillStyle = wallColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Pixel art clouds
-        this.drawPixelCloud(250 - this.cameraX * 0.3, 80, 1);
-        this.drawPixelCloud(600 - this.cameraX * 0.4, 120, 0.8);
-        this.drawPixelCloud(1000 - this.cameraX * 0.35, 60, 1.2);
-        this.drawPixelCloud(1500 - this.cameraX * 0.3, 100, 0.9);
-    }
-
-    drawPixelCloud(x, y, scale) {
-        const s = 8 * scale;
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        // Floor (wooden)
+        const floorY = this.canvas.height - 200;
+        const floorGradient = this.ctx.createLinearGradient(0, floorY, 0, this.canvas.height);
+        floorGradient.addColorStop(0, this.isNightTime ? '#4a3626' : '#8B6F47');
+        floorGradient.addColorStop(1, this.isNightTime ? '#3a2616' : '#6B5437');
+        this.ctx.fillStyle = floorGradient;
+        this.ctx.fillRect(0, floorY, this.canvas.width, 200);
         
-        // Cloud body (pixelated)
-        this.ctx.fillRect(x, y, s * 4, s);
-        this.ctx.fillRect(x - s, y + s, s * 6, s);
-        this.ctx.fillRect(x + s, y - s, s * 2, s);
-        this.ctx.fillRect(x - s, y + s * 2, s * 6, s);
-    }
-
-    drawGround() {
-        const groundY = this.canvas.height - 200;
-        
-        // Dark soil base
-        this.ctx.fillStyle = '#2d1b00';
-        this.ctx.fillRect(0, this.canvas.height - 50, this.canvas.width, 50);
-        
-        // Grass layers (pixel art style)
-        const grassGradient = this.ctx.createLinearGradient(0, groundY, 0, this.canvas.height - 50);
-        grassGradient.addColorStop(0, '#7cb342');
-        grassGradient.addColorStop(0.5, '#689f38');
-        grassGradient.addColorStop(1, '#558b2f');
-        this.ctx.fillStyle = grassGradient;
-        this.ctx.fillRect(0, groundY, this.canvas.width, 150);
-        
-        // Grass details (small pixel tufts)
-        this.ctx.fillStyle = '#8bc34a';
-        for (let i = -this.cameraX % 30; i < this.canvas.width; i += 30) {
-            const tuftHeight = 6 + Math.sin(i * 0.1) * 3;
-            this.ctx.fillRect(i, groundY - 3, 3, tuftHeight);
-            this.ctx.fillRect(i + 10, groundY - 2, 3, tuftHeight - 2);
-            this.ctx.fillRect(i + 20, groundY - 4, 3, tuftHeight - 1);
+        // Wood planks
+        this.ctx.strokeStyle = this.isNightTime ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
+        this.ctx.lineWidth = 2;
+        for (let i = 0; i < this.canvas.height; i += 40) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, floorY + i);
+            this.ctx.lineTo(this.canvas.width, floorY + i);
+            this.ctx.stroke();
         }
         
-        // Draw trees
-        this.trees.forEach(tree => {
-            const treeX = tree.x - this.cameraX;
-            if (treeX > -400 && treeX < this.canvas.width + 400) {
-                this.drawPixelTree(treeX, groundY - 20, tree.scale);
+        // Window (large)
+        const windowX = this.canvas.width - 350;
+        const windowY = 80;
+        const windowWidth = 300;
+        const windowHeight = 400;
+        
+        // Window frame
+        this.ctx.fillStyle = '#3a3a3a';
+        this.ctx.fillRect(windowX - 10, windowY - 10, windowWidth + 20, windowHeight + 20);
+        
+        // Window panes - day or night
+        if (this.isNightTime) {
+            // Night sky
+            const nightGradient = this.ctx.createLinearGradient(windowX, windowY, windowX, windowY + windowHeight);
+            nightGradient.addColorStop(0, '#0a0a2e');
+            nightGradient.addColorStop(1, '#1a1a3e');
+            this.ctx.fillStyle = nightGradient;
+            this.ctx.fillRect(windowX, windowY, windowWidth, windowHeight);
+            
+            // Stars
+            this.ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 20; i++) {
+                const starX = windowX + (i * 37) % windowWidth;
+                const starY = windowY + (i * 51) % windowHeight;
+                this.ctx.fillRect(starX, starY, 2, 2);
             }
-        });
-        
-        // Small rocks
-        this.ctx.fillStyle = '#757575';
-        for (let i = -this.cameraX % 200; i < this.canvas.width; i += 200) {
-            this.ctx.fillRect(i + 50, groundY + 20, 15, 10);
-            this.ctx.fillRect(i + 52, groundY + 15, 11, 5);
+            
+            // Moon
+            this.ctx.fillStyle = '#f0f0d0';
+            this.ctx.beginPath();
+            this.ctx.arc(windowX + windowWidth - 80, windowY + 80, 40, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Moon craters
+            this.ctx.fillStyle = '#d0d0b0';
+            this.ctx.beginPath();
+            this.ctx.arc(windowX + windowWidth - 70, windowY + 75, 8, 0, Math.PI * 2);
+            this.ctx.arc(windowX + windowWidth - 90, windowY + 85, 6, 0, Math.PI * 2);
+            this.ctx.fill();
+        } else {
+            // Day sky
+            const skyGradient = this.ctx.createLinearGradient(windowX, windowY, windowX, windowY + windowHeight);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(1, '#B0E2FF');
+            this.ctx.fillStyle = skyGradient;
+            this.ctx.fillRect(windowX, windowY, windowWidth, windowHeight);
+            
+            // Sun
+            this.ctx.fillStyle = '#FFD700';
+            this.ctx.beginPath();
+            this.ctx.arc(windowX + 80, windowY + 100, 50, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Clouds
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            this.ctx.beginPath();
+            this.ctx.arc(windowX + 150, windowY + 200, 40, 0, Math.PI * 2);
+            this.ctx.arc(windowX + 180, windowY + 200, 35, 0, Math.PI * 2);
+            this.ctx.arc(windowX + 210, windowY + 200, 40, 0, Math.PI * 2);
+            this.ctx.fill();
         }
+        
+        // Window cross bars
+        this.ctx.strokeStyle = '#3a3a3a';
+        this.ctx.lineWidth = 8;
+        this.ctx.beginPath();
+        this.ctx.moveTo(windowX + windowWidth / 2, windowY);
+        this.ctx.lineTo(windowX + windowWidth / 2, windowY + windowHeight);
+        this.ctx.moveTo(windowX, windowY + windowHeight / 2);
+        this.ctx.lineTo(windowX + windowWidth, windowY + windowHeight / 2);
+        this.ctx.stroke();
+        
+        // Bed in background
+        const bedX = 50;
+        const bedY = this.canvas.height - 350;
+        
+        // Bed frame
+        this.ctx.fillStyle = '#5a3a1a';
+        this.ctx.fillRect(bedX, bedY + 80, 200, 20);
+        
+        // Mattress
+        this.ctx.fillStyle = '#4a7ba7';
+        this.ctx.fillRect(bedX, bedY, 200, 80);
+        
+        // Pillow
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillRect(bedX + 20, bedY + 10, 50, 30);
+        
+        // Blanket
+        this.ctx.fillStyle = '#8b4789';
+        this.ctx.fillRect(bedX + 70, bedY + 30, 120, 50);
+        
+        // Bean bag
+        const beanBagX = this.canvas.width / 2 - 100;
+        const beanBagY = this.canvas.height - 280;
+        
+        this.ctx.fillStyle = '#d35400';
+        this.ctx.beginPath();
+        this.ctx.ellipse(beanBagX, beanBagY, 80, 60, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.ctx.fillStyle = '#e67e22';
+        this.ctx.beginPath();
+        this.ctx.ellipse(beanBagX, beanBagY - 10, 70, 50, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Candles (with flickering flame)
+        this.drawCandle(150, this.canvas.height - 380);
+        this.drawCandle(this.canvas.width - 450, 200);
     }
 
-    drawPixelTree(x, y, scale) {
-        const s = scale;
+    drawCandle(x, y) {
+        // Candle body
+        this.ctx.fillStyle = '#f4e4c1';
+        this.ctx.fillRect(x, y, 15, 40);
         
-        // Tree trunk (brown with texture)
-        this.ctx.fillStyle = '#5d4037';
-        this.ctx.fillRect(x - 20 * s, y, 40 * s, 100 * s);
-        
-        // Trunk highlights
-        this.ctx.fillStyle = '#6d4c41';
-        this.ctx.fillRect(x - 15 * s, y + 10 * s, 10 * s, 80 * s);
-        
-        // Trunk shadows
-        this.ctx.fillStyle = '#4e342e';
-        this.ctx.fillRect(x + 5 * s, y + 10 * s, 10 * s, 80 * s);
-        
-        // Foliage - layered pixel art leaves
-        const leafY = y - 80 * s;
-        
-        // Dark green base
-        this.ctx.fillStyle = '#558b2f';
+        // Wick
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 1;
         this.ctx.beginPath();
-        this.ctx.arc(x, leafY, 100 * s, 0, Math.PI * 2);
+        this.ctx.moveTo(x + 7.5, y);
+        this.ctx.lineTo(x + 7.5, y - 5);
+        this.ctx.stroke();
+        
+        // Flame (flickering)
+        const flicker = Math.sin(this.time * 10) * 2;
+        const flameGradient = this.ctx.createRadialGradient(x + 7.5, y - 10, 0, x + 7.5, y - 10, 15);
+        flameGradient.addColorStop(0, '#ffff00');
+        flameGradient.addColorStop(0.5, '#ff9900');
+        flameGradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
+        
+        this.ctx.fillStyle = flameGradient;
+        this.ctx.beginPath();
+        this.ctx.ellipse(x + 7.5, y - 10 + flicker, 8, 12, 0, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Medium green layer
-        this.ctx.fillStyle = '#689f38';
+        // Glow
+        if (!this.isNightTime) return;
+        this.ctx.fillStyle = 'rgba(255, 200, 100, 0.1)';
         this.ctx.beginPath();
-        this.ctx.arc(x - 20 * s, leafY - 10 * s, 80 * s, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.beginPath();
-        this.ctx.arc(x + 20 * s, leafY + 10 * s, 70 * s, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Light green highlights
-        this.ctx.fillStyle = '#8bc34a';
-        this.ctx.beginPath();
-        this.ctx.arc(x - 30 * s, leafY - 20 * s, 50 * s, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.beginPath();
-        this.ctx.arc(x + 25 * s, leafY - 15 * s, 45 * s, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Brightest highlights
-        this.ctx.fillStyle = '#aed581';
-        this.ctx.beginPath();
-        this.ctx.arc(x - 20 * s, leafY - 30 * s, 30 * s, 0, Math.PI * 2);
+        this.ctx.arc(x + 7.5, y - 10, 50, 0, Math.PI * 2);
         this.ctx.fill();
     }
 
     drawSections() {
         this.ctx.save();
+        
+        // Floating sign that follows camera
+        this.drawFloatingSign();
+        
         this.drawCenterSection();
         this.drawAboutMeSection();
         this.drawGamesSection();
         this.ctx.restore();
     }
 
+    drawFloatingSign() {
+        // Sign always at top center of screen
+        const signX = this.canvas.width / 2 - 200;
+        const signY = 30;
+        
+        this.ctx.fillStyle = 'rgba(139, 69, 19, 0.95)';
+        this.ctx.fillRect(signX, signY, 400, 60);
+        
+        this.ctx.strokeStyle = '#5a3a1a';
+        this.ctx.lineWidth = 4;
+        this.ctx.strokeRect(signX, signY, 400, 60);
+        
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.font = 'bold 24px Poppins';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText("Mayowa's Room", signX + 200, signY + 35);
+        
+        this.ctx.fillStyle = '#FFF';
+        this.ctx.font = '14px Poppins';
+        this.ctx.fillText("← About Me | Games →", signX + 200, signY + 52);
+    }
+
     drawCenterSection() {
         const sectionX = this.sections.center.x - this.cameraX;
         
         if (sectionX > -this.sections.center.width && sectionX < this.canvas.width) {
-            // Welcome wooden sign on tree
-            const signX = this.canvas.width / 2 - 200;
-            const signY = 100;
-            
-            // Rope
-            this.ctx.strokeStyle = '#8B7355';
-            this.ctx.lineWidth = 3;
-            this.ctx.beginPath();
-            this.ctx.moveTo(signX + 200, 50);
-            this.ctx.lineTo(signX + 200, signY);
-            this.ctx.stroke();
-            
-            // Wooden board
-            this.ctx.fillStyle = '#8B4513';
-            this.ctx.fillRect(signX, signY, 400, 80);
-            
-            // Wood texture
-            this.ctx.fillStyle = '#654321';
-            this.ctx.fillRect(signX, signY + 15, 400, 3);
-            this.ctx.fillRect(signX, signY + 40, 400, 3);
-            this.ctx.fillRect(signX, signY + 65, 400, 3);
-            
-            // Border
-            this.ctx.strokeStyle = '#5a3a1a';
-            this.ctx.lineWidth = 5;
-            this.ctx.strokeRect(signX, signY, 400, 80);
-            
-            this.ctx.fillStyle = '#FFD700';
-            this.ctx.font = 'bold 28px Poppins';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText("Mayowa's Portfolio", signX + 200, signY + 45);
-            
-            this.ctx.fillStyle = '#FFF';
-            this.ctx.font = '16px Poppins';
-            this.ctx.fillText("← About Me | Games →", signX + 200, signY + 65);
+            // Just character alone in center - no signs needed
         }
     }
 
@@ -235,64 +271,37 @@ class SceneManager {
         const sectionX = this.sections.aboutMe.x - this.cameraX;
         
         if (sectionX > -this.sections.aboutMe.width && sectionX < this.canvas.width) {
-            const boardX = Math.max(50, sectionX + 100);
-            const boardY = 120;
-            const boardWidth = Math.min(700, this.canvas.width - 100);
-            const boardHeight = this.canvas.height - 350;
+            // Clean white panel
+            const panelWidth = 700;
+            const panelHeight = this.canvas.height - 280;
+            const panelX = this.canvas.width / 2 - panelWidth / 2;
+            const panelY = 110;
             
-            // Rope from tree
-            this.ctx.strokeStyle = '#8B7355';
-            this.ctx.lineWidth = 3;
-            this.ctx.beginPath();
-            this.ctx.moveTo(boardX + boardWidth / 2, 50);
-            this.ctx.lineTo(boardX + boardWidth / 2, boardY);
-            this.ctx.stroke();
+            // Shadow
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            this.ctx.fillRect(panelX + 5, panelY + 5, panelWidth, panelHeight);
             
-            // Board shadow
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            this.ctx.fillRect(boardX + 5, boardY + 5, boardWidth, boardHeight);
-            
-            // Wooden board
-            this.ctx.fillStyle = '#D2691E';
-            this.ctx.fillRect(boardX, boardY, boardWidth, boardHeight);
-            
-            // Wood grain
-            this.ctx.fillStyle = '#A0522D';
-            for (let i = 0; i < 8; i++) {
-                this.ctx.fillRect(boardX, boardY + i * (boardHeight / 8), boardWidth, 2);
-            }
+            // White background
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
             
             // Border
-            this.ctx.strokeStyle = '#8B4513';
-            this.ctx.lineWidth = 6;
-            this.ctx.strokeRect(boardX, boardY, boardWidth, boardHeight);
-            
-            // Paper background
-            const paperX = boardX + 20;
-            const paperY = boardY + 20;
-            const paperWidth = boardWidth - 40;
-            const paperHeight = boardHeight - 40;
-            
-            this.ctx.fillStyle = '#FFFEF0';
-            this.ctx.fillRect(paperX, paperY, paperWidth, paperHeight);
-            
-            // Paper border
-            this.ctx.strokeStyle = '#D4AF37';
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(paperX, paperY, paperWidth, paperHeight);
+            this.ctx.strokeStyle = '#667eea';
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
             
             // Title
             this.ctx.fillStyle = '#667eea';
-            this.ctx.font = 'bold 32px Poppins';
+            this.ctx.font = 'bold 36px Poppins';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText("Welcome to Mayowa's Home!", paperX + paperWidth / 2, paperY + 40);
+            this.ctx.fillText("Welcome to Mayowa's Home!", panelX + panelWidth / 2, panelY + 50);
             
             this.ctx.font = 'bold 24px Poppins';
-            this.ctx.fillText('About Me', paperX + paperWidth / 2, paperY + 75);
+            this.ctx.fillText('About Me', panelX + panelWidth / 2, panelY + 85);
             
             // Content
             this.ctx.fillStyle = '#333';
-            this.ctx.font = '15px Poppins';
+            this.ctx.font = '16px Poppins';
             this.ctx.textAlign = 'left';
             const lines = [
                 'Hello, my name is Mayowa. I am 17 years old and I am from Avon, Indiana.',
@@ -312,54 +321,12 @@ class SceneManager {
             ];
             
             lines.forEach((line, i) => {
-                this.ctx.fillText(line, paperX + 20, paperY + 110 + i * 22);
+                this.ctx.fillText(line, panelX + 30, panelY + 125 + i * 24);
             });
             
-            // GLOWING "ABOUT ME" BUTTON - CENTER OVERLAY
-            const glowBtnWidth = 400;
-            const glowBtnHeight = 100;
-            const glowBtnX = paperX + paperWidth / 2 - glowBtnWidth / 2;
-            const glowBtnY = paperY + paperHeight / 2 - 50;
-            
-            // Animated glow effect
-            const glowIntensity = 0.5 + Math.sin(this.time * 3) * 0.3;
-            
-            // Outer glow
-            this.ctx.shadowColor = '#00FF00';
-            this.ctx.shadowBlur = 40 * glowIntensity;
-            this.ctx.fillStyle = '#000';
-            this.ctx.fillRect(glowBtnX, glowBtnY, glowBtnWidth, glowBtnHeight);
-            
-            // Reset shadow
-            this.ctx.shadowBlur = 0;
-            
-            // Inner glow border
-            this.ctx.strokeStyle = '#00FF00';
-            this.ctx.lineWidth = 4;
-            this.ctx.strokeRect(glowBtnX + 5, glowBtnY + 5, glowBtnWidth - 10, glowBtnHeight - 10);
-            
-            // Text with pixel font style
-            this.ctx.fillStyle = '#00FF00';
-            this.ctx.font = 'bold 40px monospace';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('About Me', glowBtnX + glowBtnWidth / 2, glowBtnY + glowBtnHeight / 2 + 10);
-            
-            // Pulsing effect on text
-            this.ctx.shadowColor = '#00FF00';
-            this.ctx.shadowBlur = 25 * glowIntensity;
-            this.ctx.fillText('About Me', glowBtnX + glowBtnWidth / 2, glowBtnY + glowBtnHeight / 2 + 10);
-            this.ctx.shadowBlur = 0;
-            
-            window.aboutMeButton = {
-                worldX: this.sections.aboutMe.x + (glowBtnX - sectionX),
-                y: glowBtnY,
-                width: glowBtnWidth,
-                height: glowBtnHeight
-            };
-            
             // Contact button
-            const btnX = paperX + paperWidth / 2 - 120;
-            const btnY = paperY + paperHeight - 50;
+            const btnX = panelX + panelWidth / 2 - 120;
+            const btnY = panelY + panelHeight - 50;
             const btnWidth = 240;
             const btnHeight = 40;
             
@@ -375,7 +342,7 @@ class SceneManager {
             this.ctx.fillText('📧 Send Me a Message', btnX + btnWidth / 2, btnY + 25);
             
             window.contactButton = {
-                worldX: this.sections.aboutMe.x + (boardX - sectionX) + paperWidth / 2 - 120,
+                x: btnX,
                 y: btnY,
                 width: btnWidth,
                 height: btnHeight
@@ -387,28 +354,30 @@ class SceneManager {
         const sectionX = this.sections.games.x - this.cameraX;
         
         if (sectionX > -this.sections.games.width && sectionX < this.canvas.width) {
-            // Wooden sign
-            const signX = sectionX + 200;
-            const signY = 80;
+            // Clean white panel for games
+            const panelWidth = Math.min(900, this.canvas.width - 100);
+            const panelHeight = this.canvas.height - 280;
+            const panelX = this.canvas.width / 2 - panelWidth / 2;
+            const panelY = 110;
             
-            this.ctx.strokeStyle = '#8B7355';
+            // Shadow
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            this.ctx.fillRect(panelX + 5, panelY + 5, panelWidth, panelHeight);
+            
+            // White background
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+            
+            // Border
+            this.ctx.strokeStyle = '#667eea';
             this.ctx.lineWidth = 3;
-            this.ctx.beginPath();
-            this.ctx.moveTo(signX + 150, 50);
-            this.ctx.lineTo(signX + 150, signY);
-            this.ctx.stroke();
+            this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
             
-            this.ctx.fillStyle = '#8B4513';
-            this.ctx.fillRect(signX, signY, 300, 60);
-            
-            this.ctx.strokeStyle = '#5a3a1a';
-            this.ctx.lineWidth = 5;
-            this.ctx.strokeRect(signX, signY, 300, 60);
-            
-            this.ctx.fillStyle = '#FFD700';
+            // Title
+            this.ctx.fillStyle = '#667eea';
             this.ctx.font = 'bold 36px Poppins';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText('My Games', signX + 150, signY + 42);
+            this.ctx.fillText('My Games', panelX + panelWidth / 2, panelY + 50);
             
             const games = [
                 { name: 'Flappy Bird', icon: '🐦', color: '#87CEEB' },
@@ -418,11 +387,11 @@ class SceneManager {
                 { name: 'Snake Race', icon: '🐍', color: '#98FB98' }
             ];
             
-            const cardWidth = 260;
-            const cardHeight = 200;
-            const gap = 40;
-            const startX = sectionX + 150;
-            const startY = 180;
+            const cardWidth = 240;
+            const cardHeight = 180;
+            const gap = 30;
+            const startX = panelX + 50;
+            const startY = panelY + 90;
             
             window.gameCards = [];
             
@@ -432,35 +401,40 @@ class SceneManager {
                 const x = startX + col * (cardWidth + gap);
                 const y = startY + row * (cardHeight + gap);
                 
-                // Shadow
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-                this.ctx.fillRect(x + 5, y + 5, cardWidth, cardHeight);
+                // Card shadow
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.fillRect(x + 3, y + 3, cardWidth, cardHeight);
                 
-                // Card
-                this.ctx.fillStyle = '#fff';
+                // Card background
+                this.ctx.fillStyle = '#f8f9fa';
                 this.ctx.fillRect(x, y, cardWidth, cardHeight);
                 
                 // Thumbnail
                 this.ctx.fillStyle = game.color;
-                this.ctx.fillRect(x, y, cardWidth, 130);
+                this.ctx.fillRect(x, y, cardWidth, 120);
                 
                 // Icon
                 this.ctx.font = '60px Arial';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText(game.icon, x + cardWidth / 2, y + 85);
+                this.ctx.fillText(game.icon, x + cardWidth / 2, y + 75);
                 
                 // Title
                 this.ctx.fillStyle = '#333';
-                this.ctx.font = 'bold 20px Poppins';
-                this.ctx.fillText(game.name, x + cardWidth / 2, y + 160);
+                this.ctx.font = 'bold 18px Poppins';
+                this.ctx.fillText(game.name, x + cardWidth / 2, y + 145);
                 
                 // Subtitle
                 this.ctx.fillStyle = '#666';
                 this.ctx.font = '14px Poppins';
-                this.ctx.fillText('Click to play', x + cardWidth / 2, y + 180);
+                this.ctx.fillText('Click to play', x + cardWidth / 2, y + 165);
+                
+                // Border
+                this.ctx.strokeStyle = '#ddd';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(x, y, cardWidth, cardHeight);
                 
                 window.gameCards[index] = {
-                    worldX: this.sections.games.x + 150 + col * (cardWidth + gap),
+                    x: x,
                     y: y,
                     width: cardWidth,
                     height: cardHeight,
@@ -476,7 +450,9 @@ class Character {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.x = canvas.width / 2;
-        this.y = canvas.height - 230;
+        this.y = canvas.height - 250;
+        this.height = 120;
+        this.width = 50;
         this.frame = 0;
         this.frameCount = 0;
         this.isWalking = false;
@@ -487,10 +463,9 @@ class Character {
         this.isWaving = true;
         
         this.phrases = [
-            "Hi there! 👋",
-            "Use Arrow Keys!",
-            "Let's explore!",
-            "Check out my work!",
+            "Hi! Welcome to my room! 👋",
+            "Use Arrow Keys to explore!",
+            "Check out my projects!",
             "Move around!",
             "Games to the right!",
             "About me to the left!"
@@ -498,7 +473,6 @@ class Character {
         
         this.setupControls();
         
-        // Wave for 3 seconds at start
         setTimeout(() => {
             this.isWaving = false;
         }, 3000);
@@ -521,8 +495,8 @@ class Character {
 
         this.canvas.addEventListener('click', (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const mouseX = (e.clientX - rect.left) * (this.canvas.width / rect.width);
+            const mouseY = (e.clientY - rect.top) * (this.canvas.height / rect.height);
             
             if (this.isPointInCharacter(mouseX, mouseY)) {
                 this.onCharacterClick();
@@ -531,10 +505,8 @@ class Character {
     }
 
     isPointInCharacter(x, y) {
-        const charScreenX = this.x;
-        const charScreenY = this.y;
-        return x >= charScreenX - 30 && x <= charScreenX + 30 && 
-               y >= charScreenY - 50 && y <= charScreenY;
+        return x >= this.x - this.width / 2 && x <= this.x + this.width / 2 && 
+               y >= this.y - this.height && y <= this.y;
     }
 
     onCharacterClick() {
@@ -564,7 +536,7 @@ class Character {
         bubble.classList.remove('hidden');
         
         bubble.style.left = this.x + 'px';
-        bubble.style.top = (this.y - 80) + 'px';
+        bubble.style.top = (this.y - 150) + 'px';
         
         setTimeout(() => {
             bubble.classList.add('hidden');
@@ -597,7 +569,7 @@ class Character {
         this.velocity += 0.6;
         this.y += this.velocity;
         
-        const groundY = this.canvas.height - 230;
+        const groundY = this.canvas.height - 250;
         if (this.y >= groundY) {
             this.y = groundY;
             this.velocity = 0;
@@ -620,7 +592,7 @@ class Character {
     draw() {
         this.ctx.save();
         
-        const scale = 3;
+        const scale = 1;
         const baseX = this.x;
         const baseY = this.y;
         
@@ -630,79 +602,117 @@ class Character {
         }
         
         // Shadow
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         this.ctx.beginPath();
-        this.ctx.ellipse(baseX, baseY + 2, 18, 5, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(baseX, baseY + 5, 25, 8, 0, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Legs
-        const legOffset = this.isWalking ? (this.frame === 0 ? -2 : 2) : 0;
+        // REALISTIC PROPORTIONS - Taller character
+        const legMove = this.isWalking ? (this.frame === 0 ? -3 : 3) : 0;
         
-        // Left leg (gray pants)
-        this.ctx.fillStyle = '#B0B0B0';
-        this.ctx.fillRect(baseX - 6 * scale, baseY - 12 * scale, 5 * scale, 10 * scale);
-        
-        // Right leg
-        this.ctx.fillRect(baseX + 1 * scale, baseY - 12 * scale + legOffset, 5 * scale, 10 * scale - Math.abs(legOffset));
-        
-        // Shoes (black)
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(baseX - 7 * scale, baseY - 2 * scale, 6 * scale, 3 * scale);
-        this.ctx.fillRect(baseX + 1 * scale, baseY - 2 * scale + legOffset, 6 * scale, 3 * scale);
-        
-        // Body (blue shirt)
+        // Legs (jeans - blue)
         this.ctx.fillStyle = '#4A90E2';
-        this.ctx.fillRect(baseX - 7 * scale, baseY - 22 * scale, 14 * scale, 10 * scale);
+        this.ctx.fillRect(baseX - 12, baseY - 50, 10, 45);
+        this.ctx.fillRect(baseX + 2, baseY - 50 + legMove, 10, 45 - Math.abs(legMove));
         
-        // Arms
-        this.ctx.fillStyle = '#8B4513';
+        // Shoes (white sneakers)
+        this.ctx.fillStyle = '#f5f5f5';
+        this.ctx.fillRect(baseX - 15, baseY - 5, 14, 8);
+        this.ctx.fillRect(baseX + 2, baseY - 5 + legMove, 14, 8);
         
-        if (this.isWaving) {
-            // Waving arm
-            const waveAngle = Math.sin(this.waveFrame * 0.2) * 30;
-            this.ctx.save();
-            this.ctx.translate(baseX + 7 * scale, baseY - 20 * scale);
-            this.ctx.rotate((waveAngle - 45) * Math.PI / 180);
-            this.ctx.fillRect(0, 0, 3 * scale, 8 * scale);
-            this.ctx.restore();
-            
-            // Other arm
-            this.ctx.fillRect(baseX - 10 * scale, baseY - 20 * scale, 3 * scale, 8 * scale);
-        } else {
-            const armSwing = this.isWalking ? (this.frame === 0 ? 2 : -2) : 0;
-            this.ctx.fillRect(baseX - 10 * scale, baseY - 20 * scale + armSwing, 3 * scale, 8 * scale);
-            this.ctx.fillRect(baseX + 7 * scale, baseY - 20 * scale - armSwing, 3 * scale, 8 * scale);
-        }
+        // Shoe soles
+        this.ctx.fillStyle = '#333';
+        this.ctx.fillRect(baseX - 15, baseY + 3, 14, 2);
+        this.ctx.fillRect(baseX + 2, baseY + 3 + legMove, 14, 2);
+        
+        // Torso (blue shirt/hoodie)
+        this.ctx.fillStyle = '#2E5090';
+        this.ctx.fillRect(baseX - 18, baseY - 95, 36, 45);
+        
+        // Hoodie pocket
+        this.ctx.strokeStyle = '#1a3a6a';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(baseX - 12, baseY - 75, 24, 15);
         
         // Neck
-        this.ctx.fillStyle = '#8B4513';
-        this.ctx.fillRect(baseX - 3 * scale, baseY - 24 * scale, 6 * scale, 3 * scale);
+        this.ctx.fillStyle = '#C49A6C';
+        this.ctx.fillRect(baseX - 8, baseY - 100, 16, 8);
         
-        // Head (round)
-        this.ctx.fillStyle = '#8B4513';
-        this.ctx.fillRect(baseX - 5 * scale, baseY - 30 * scale, 10 * scale, 8 * scale);
-        this.ctx.fillRect(baseX - 6 * scale, baseY - 28 * scale, 12 * scale, 6 * scale);
+        // Arms
+        this.ctx.fillStyle = '#2E5090';
         
-        // Hair (black afro)
+        if (this.isWaving) {
+            // Waving right arm
+            const waveAngle = Math.sin(this.waveFrame * 0.2) * 30;
+            this.ctx.save();
+            this.ctx.translate(baseX + 18, baseY - 90);
+            this.ctx.rotate((waveAngle - 45) * Math.PI / 180);
+            this.ctx.fillRect(0, 0, 10, 35);
+            // Hand
+            this.ctx.fillStyle = '#C49A6C';
+            this.ctx.fillRect(0, 32, 10, 12);
+            this.ctx.restore();
+            
+            // Left arm
+            this.ctx.fillStyle = '#2E5090';
+            this.ctx.fillRect(baseX - 28, baseY - 90, 10, 35);
+            this.ctx.fillStyle = '#C49A6C';
+            this.ctx.fillRect(baseX - 28, baseY - 58, 10, 12);
+        } else {
+            const armSwing = this.isWalking ? (this.frame === 0 ? 3 : -3) : 0;
+            // Arms
+            this.ctx.fillRect(baseX - 28, baseY - 90 + armSwing, 10, 35);
+            this.ctx.fillRect(baseX + 18, baseY - 90 - armSwing, 10, 35);
+            
+            // Hands
+            this.ctx.fillStyle = '#C49A6C';
+            this.ctx.fillRect(baseX - 28, baseY - 58 + armSwing, 10, 12);
+            this.ctx.fillRect(baseX + 18, baseY - 58 - armSwing, 10, 12);
+        }
+        
+        // Head (realistic proportions)
+        this.ctx.fillStyle = '#8B5A3C';
+        this.ctx.beginPath();
+        this.ctx.ellipse(baseX, baseY - 110, 16, 18, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Hair (afro - larger and more detailed)
         this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(baseX - 6 * scale, baseY - 33 * scale, 12 * scale, 5 * scale);
-        this.ctx.fillRect(baseX - 7 * scale, baseY - 31 * scale, 14 * scale, 3 * scale);
+        this.ctx.beginPath();
+        this.ctx.ellipse(baseX, baseY - 115, 22, 20, 0, Math.PI, 0);
+        this.ctx.fill();
         
-        // Eyes
+        // Hair sides
+        this.ctx.beginPath();
+        this.ctx.ellipse(baseX - 18, baseY - 110, 14, 16, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(baseX + 18, baseY - 110, 14, 16, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Eyes (more realistic)
         this.ctx.fillStyle = '#FFF';
-        this.ctx.fillRect(baseX - 4 * scale, baseY - 28 * scale, 3 * scale, 3 * scale);
-        this.ctx.fillRect(baseX + 1 * scale, baseY - 28 * scale, 3 * scale, 3 * scale);
+        this.ctx.beginPath();
+        this.ctx.ellipse(baseX - 6, baseY - 112, 3, 4, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(baseX + 6, baseY - 112, 3, 4, 0, 0, Math.PI * 2);
+        this.ctx.fill();
         
         // Pupils
-        this.ctx.fillStyle = '#000';
-        const pupilX = this.facingRight ? 1 : 0;
-        this.ctx.fillRect(baseX - 4 * scale + pupilX, baseY - 28 * scale + 1, 2 * scale, 2 * scale);
-        this.ctx.fillRect(baseX + 1 * scale + pupilX, baseY - 28 * scale + 1, 2 * scale, 2 * scale);
+        this.ctx.fillStyle = '#2a1a0a';
+        this.ctx.beginPath();
+        const pupilX = this.facingRight ? 1 : -1;
+        this.ctx.ellipse(baseX - 6 + pupilX, baseY - 112, 2, 3, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(baseX + 6 + pupilX, baseY - 112, 2, 3, 0, 0, Math.PI * 2);
+        this.ctx.fill();
         
-        // Mouth (smile)
-        this.ctx.fillStyle = '#FFF';
-        this.ctx.fillRect(baseX - 2 * scale, baseY - 24 * scale, scale, scale);
-        this.ctx.fillRect(baseX + scale, baseY - 24 * scale, scale, scale);
+        // Nose
+        this.ctx.fillStyle = '#6B4423';
+        this.ctx.fillRect(baseX + 2, baseY - 108, 3, 6);
+        
+        // Smile
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.arc(baseX, baseY - 103, 8, 0.2, Math.PI - 0.2);
+        this.ctx.stroke();
         
         this.ctx.restore();
     }
