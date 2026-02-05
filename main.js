@@ -11,21 +11,18 @@ if (!canvas) {
 
 console.log('Canvas found:', canvas);
 
-// Responsive canvas sizing
+// Fullscreen responsive canvas sizing
 function resizeCanvas() {
-    const maxWidth = 800;
-    const maxHeight = 600;
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
+    // Make canvas take most of the screen but leave room for UI
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - 60; // Leave room for controls at top
     
-    if (windowWidth < maxWidth) {
-        canvas.width = windowWidth;
-        canvas.height = (windowWidth / maxWidth) * maxHeight;
-    } else {
-        canvas.width = maxWidth;
-        canvas.height = maxHeight;
-    }
     console.log('Canvas resized:', canvas.width, 'x', canvas.height);
+    
+    // Reposition character to ground level
+    if (window.character) {
+        character.y = canvas.height - 180;
+    }
 }
 
 resizeCanvas();
