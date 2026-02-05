@@ -347,6 +347,7 @@ function animate() {
         
         sceneManager.drawBackground();
         sceneManager.drawGround();
+        sceneManager.drawRoomElements();
         sceneManager.drawSections();
         
         character.update();
