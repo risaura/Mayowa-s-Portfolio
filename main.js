@@ -62,28 +62,9 @@ canvas.addEventListener('click', (e) => {
     
     console.log('Canvas clicked at:', clickX, clickY);
     
-    // Check glowing About Me button
-    if (window.aboutMeButton) {
-        const btnScreenX = window.aboutMeButton.worldX - sceneManager.cameraX;
-        
-        if (clickX >= btnScreenX && clickX <= btnScreenX + window.aboutMeButton.width &&
-            clickY >= window.aboutMeButton.y && clickY <= window.aboutMeButton.y + window.aboutMeButton.height) {
-            
-            console.log('About Me button clicked - showing info!');
-            // Could open a modal or do something special
-            if (window.audioManager) {
-                audioManager.play('achievement');
-            }
-            alert('Welcome! This is the About Me section. Read about Mayowa above!');
-            return;
-        }
-    }
-    
-    // Check contact button
+    // Check contact button (fixed position)
     if (window.contactButton) {
-        const btnScreenX = window.contactButton.worldX - sceneManager.cameraX;
-        
-        if (clickX >= btnScreenX && clickX <= btnScreenX + window.contactButton.width &&
+        if (clickX >= window.contactButton.x && clickX <= window.contactButton.x + window.contactButton.width &&
             clickY >= window.contactButton.y && clickY <= window.contactButton.y + window.contactButton.height) {
             
             console.log('Contact button clicked');
@@ -92,15 +73,14 @@ canvas.addEventListener('click', (e) => {
             if (window.audioManager) {
                 audioManager.play('click');
             }
+            return;
         }
     }
     
-    // Check game cards
+    // Check game cards (fixed positions)
     if (window.gameCards) {
-        window.gameCards.forEach(card => {
-            const cardScreenX = card.worldX - sceneManager.cameraX;
-            
-            if (clickX >= cardScreenX && clickX <= cardScreenX + card.width &&
+        for (let card of window.gameCards) {
+            if (clickX >= card.x && clickX <= card.x + card.width &&
                 clickY >= card.y && clickY <= card.y + card.height) {
                 
                 console.log('Game card clicked:', card.game);
@@ -109,8 +89,9 @@ canvas.addEventListener('click', (e) => {
                 if (window.audioManager) {
                     audioManager.play('click');
                 }
+                return;
             }
-        });
+        }
     }
 });
 
