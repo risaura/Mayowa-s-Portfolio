@@ -5,12 +5,12 @@ class SceneManager {
         this.cameraX = 0;
         this.worldWidth = 3000;
         this.time = 0;
-        this.isNightTime = false;
+        this.isNightTime = true; // Start at night like the image
         
-        // Toggle day/night every 30 seconds
+        // Toggle day/night every 60 seconds
         setInterval(() => {
             this.isNightTime = !this.isNightTime;
-        }, 30000);
+        }, 60000);
         
         this.sections = {
             center: { x: 0, width: 1200, name: 'Home' },
@@ -58,177 +58,278 @@ class SceneManager {
     drawBackground() {
         this.time += 0.01;
         
-        // Room walls
-        const wallColor = this.isNightTime ? '#3a4a5a' : '#e8dcc8';
+        // EXACT ROOM LIKE THE IMAGE
+        
+        // Wall color - dark purple
+        const wallColor = '#4a3b5a';
         this.ctx.fillStyle = wallColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Floor (wooden)
+        // Wall paneling - vertical lines
+        this.ctx.strokeStyle = '#3a2b4a';
+        this.ctx.lineWidth = 3;
+        for (let i = 0; i < this.canvas.width; i += 60) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(i, 0);
+            this.ctx.lineTo(i, this.canvas.height - 200);
+            this.ctx.stroke();
+        }
+        
+        // Horizontal wall trim
+        this.ctx.strokeStyle = '#2a1b3a';
+        this.ctx.lineWidth = 5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, this.canvas.height - 200);
+        this.ctx.lineTo(this.canvas.width, this.canvas.height - 200);
+        this.ctx.stroke();
+    }
+
+    drawGround() {
         const floorY = this.canvas.height - 200;
+        
+        // Wooden floor - orange/brown tones
         const floorGradient = this.ctx.createLinearGradient(0, floorY, 0, this.canvas.height);
-        floorGradient.addColorStop(0, this.isNightTime ? '#4a3626' : '#8B6F47');
-        floorGradient.addColorStop(1, this.isNightTime ? '#3a2616' : '#6B5437');
+        floorGradient.addColorStop(0, '#d4895f');
+        floorGradient.addColorStop(0.5, '#c47850');
+        floorGradient.addColorStop(1, '#a0613d');
         this.ctx.fillStyle = floorGradient;
         this.ctx.fillRect(0, floorY, this.canvas.width, 200);
         
-        // Wood planks
-        this.ctx.strokeStyle = this.isNightTime ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
-        this.ctx.lineWidth = 2;
-        for (let i = 0; i < this.canvas.height; i += 40) {
+        // Wood planks - horizontal
+        this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.4)';
+        this.ctx.lineWidth = 3;
+        for (let i = 0; i < 200; i += 30) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, floorY + i);
             this.ctx.lineTo(this.canvas.width, floorY + i);
             this.ctx.stroke();
         }
         
-        // Window (large)
-        const windowX = this.canvas.width - 350;
-        const windowY = 80;
-        const windowWidth = 300;
-        const windowHeight = 400;
-        
-        // Window frame
-        this.ctx.fillStyle = '#3a3a3a';
-        this.ctx.fillRect(windowX - 10, windowY - 10, windowWidth + 20, windowHeight + 20);
-        
-        // Window panes - day or night
-        if (this.isNightTime) {
-            // Night sky
-            const nightGradient = this.ctx.createLinearGradient(windowX, windowY, windowX, windowY + windowHeight);
-            nightGradient.addColorStop(0, '#0a0a2e');
-            nightGradient.addColorStop(1, '#1a1a3e');
-            this.ctx.fillStyle = nightGradient;
-            this.ctx.fillRect(windowX, windowY, windowWidth, windowHeight);
-            
-            // Stars
-            this.ctx.fillStyle = '#ffffff';
-            for (let i = 0; i < 20; i++) {
-                const starX = windowX + (i * 37) % windowWidth;
-                const starY = windowY + (i * 51) % windowHeight;
-                this.ctx.fillRect(starX, starY, 2, 2);
-            }
-            
-            // Moon
-            this.ctx.fillStyle = '#f0f0d0';
+        // Vertical plank separations
+        for (let i = 0; i < this.canvas.width; i += 150) {
+            this.ctx.strokeStyle = 'rgba(100, 50, 20, 0.3)';
+            this.ctx.lineWidth = 2;
             this.ctx.beginPath();
-            this.ctx.arc(windowX + windowWidth - 80, windowY + 80, 40, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Moon craters
-            this.ctx.fillStyle = '#d0d0b0';
-            this.ctx.beginPath();
-            this.ctx.arc(windowX + windowWidth - 70, windowY + 75, 8, 0, Math.PI * 2);
-            this.ctx.arc(windowX + windowWidth - 90, windowY + 85, 6, 0, Math.PI * 2);
-            this.ctx.fill();
-        } else {
-            // Day sky
-            const skyGradient = this.ctx.createLinearGradient(windowX, windowY, windowX, windowY + windowHeight);
-            skyGradient.addColorStop(0, '#87CEEB');
-            skyGradient.addColorStop(1, '#B0E2FF');
-            this.ctx.fillStyle = skyGradient;
-            this.ctx.fillRect(windowX, windowY, windowWidth, windowHeight);
-            
-            // Sun
-            this.ctx.fillStyle = '#FFD700';
-            this.ctx.beginPath();
-            this.ctx.arc(windowX + 80, windowY + 100, 50, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Clouds
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            this.ctx.beginPath();
-            this.ctx.arc(windowX + 150, windowY + 200, 40, 0, Math.PI * 2);
-            this.ctx.arc(windowX + 180, windowY + 200, 35, 0, Math.PI * 2);
-            this.ctx.arc(windowX + 210, windowY + 200, 40, 0, Math.PI * 2);
-            this.ctx.fill();
+            this.ctx.moveTo(i, floorY);
+            this.ctx.lineTo(i, this.canvas.height);
+            this.ctx.stroke();
         }
         
-        // Window cross bars
-        this.ctx.strokeStyle = '#3a3a3a';
-        this.ctx.lineWidth = 8;
-        this.ctx.beginPath();
-        this.ctx.moveTo(windowX + windowWidth / 2, windowY);
-        this.ctx.lineTo(windowX + windowWidth / 2, windowY + windowHeight);
-        this.ctx.moveTo(windowX, windowY + windowHeight / 2);
-        this.ctx.lineTo(windowX + windowWidth, windowY + windowHeight / 2);
-        this.ctx.stroke();
+        // Rug in center
+        const rugX = this.canvas.width / 2 - 150;
+        const rugY = floorY + 50;
+        this.ctx.fillStyle = '#5a7a8a';
+        this.ctx.fillRect(rugX, rugY, 300, 80);
         
-        // Bed in background
-        const bedX = 50;
-        const bedY = this.canvas.height - 350;
-        
-        // Bed frame
-        this.ctx.fillStyle = '#5a3a1a';
-        this.ctx.fillRect(bedX, bedY + 80, 200, 20);
-        
-        // Mattress
-        this.ctx.fillStyle = '#4a7ba7';
-        this.ctx.fillRect(bedX, bedY, 200, 80);
-        
-        // Pillow
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillRect(bedX + 20, bedY + 10, 50, 30);
-        
-        // Blanket
-        this.ctx.fillStyle = '#8b4789';
-        this.ctx.fillRect(bedX + 70, bedY + 30, 120, 50);
-        
-        // Bean bag
-        const beanBagX = this.canvas.width / 2 - 100;
-        const beanBagY = this.canvas.height - 280;
-        
-        this.ctx.fillStyle = '#d35400';
-        this.ctx.beginPath();
-        this.ctx.ellipse(beanBagX, beanBagY, 80, 60, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.fillStyle = '#e67e22';
-        this.ctx.beginPath();
-        this.ctx.ellipse(beanBagX, beanBagY - 10, 70, 50, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Candles (with flickering flame)
-        this.drawCandle(150, this.canvas.height - 380);
-        this.drawCandle(this.canvas.width - 450, 200);
+        // Rug pattern
+        this.ctx.strokeStyle = '#4a6a7a';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(rugX + 10, rugY + 10, 280, 60);
+        this.ctx.strokeRect(rugX + 20, rugY + 20, 260, 40);
     }
 
-    drawCandle(x, y) {
-        // Candle body
-        this.ctx.fillStyle = '#f4e4c1';
-        this.ctx.fillRect(x, y, 15, 40);
+    drawRoomElements() {
+        const floorY = this.canvas.height - 200;
         
-        // Wick
-        this.ctx.strokeStyle = '#000';
-        this.ctx.lineWidth = 1;
+        // WINDOW - Large with night view
+        const windowX = this.canvas.width - 400;
+        const windowY = 100;
+        const windowW = 350;
+        const windowH = 450;
+        
+        // Window frame - dark
+        this.ctx.fillStyle = '#2a2a3a';
+        this.ctx.fillRect(windowX - 15, windowY - 15, windowW + 30, windowH + 30);
+        
+        // Window glass - night sky
+        const skyGradient = this.ctx.createLinearGradient(windowX, windowY, windowX, windowY + windowH);
+        skyGradient.addColorStop(0, '#0a1628');
+        skyGradient.addColorStop(0.6, '#1a2a48');
+        skyGradient.addColorStop(1, '#2a3a58');
+        this.ctx.fillStyle = skyGradient;
+        this.ctx.fillRect(windowX, windowY, windowW, windowH);
+        
+        // Moon
+        this.ctx.fillStyle = '#e0e0f0';
         this.ctx.beginPath();
-        this.ctx.moveTo(x + 7.5, y);
-        this.ctx.lineTo(x + 7.5, y - 5);
-        this.ctx.stroke();
-        
-        // Flame (flickering)
-        const flicker = Math.sin(this.time * 10) * 2;
-        const flameGradient = this.ctx.createRadialGradient(x + 7.5, y - 10, 0, x + 7.5, y - 10, 15);
-        flameGradient.addColorStop(0, '#ffff00');
-        flameGradient.addColorStop(0.5, '#ff9900');
-        flameGradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
-        
-        this.ctx.fillStyle = flameGradient;
-        this.ctx.beginPath();
-        this.ctx.ellipse(x + 7.5, y - 10 + flicker, 8, 12, 0, 0, Math.PI * 2);
+        this.ctx.arc(windowX + windowW / 2, windowY + 120, 60, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Glow
-        if (!this.isNightTime) return;
-        this.ctx.fillStyle = 'rgba(255, 200, 100, 0.1)';
+        // Moon glow
+        this.ctx.fillStyle = 'rgba(224, 224, 240, 0.3)';
         this.ctx.beginPath();
-        this.ctx.arc(x + 7.5, y - 10, 50, 0, Math.PI * 2);
+        this.ctx.arc(windowX + windowW / 2, windowY + 120, 90, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Stars
+        this.ctx.fillStyle = '#ffffff';
+        const stars = [
+            [50, 50], [120, 80], [200, 40], [280, 70],
+            [80, 150], [150, 180], [240, 160], [300, 200],
+            [60, 250], [180, 280], [270, 320], [100, 350]
+        ];
+        stars.forEach(([sx, sy]) => {
+            this.ctx.fillRect(windowX + sx, windowY + sy, 3, 3);
+            // Twinkle effect
+            if (Math.random() > 0.7) {
+                this.ctx.fillRect(windowX + sx - 2, windowY + sy, 1, 3);
+                this.ctx.fillRect(windowX + sx + 3, windowY + sy, 1, 3);
+            }
+        });
+        
+        // Window frame cross
+        this.ctx.fillStyle = '#2a2a3a';
+        this.ctx.fillRect(windowX + windowW / 2 - 8, windowY, 16, windowH);
+        this.ctx.fillRect(windowX, windowY + windowH / 2 - 8, windowW, 16);
+        
+        // BED - Left side
+        const bedX = 80;
+        const bedY = floorY - 120;
+        
+        // Bed frame
+        this.ctx.fillStyle = '#5a3a2a';
+        this.ctx.fillRect(bedX, bedY + 80, 280, 25);
+        this.ctx.fillRect(bedX - 10, bedY + 80, 10, 40);
+        this.ctx.fillRect(bedX + 280, bedY + 80, 10, 40);
+        
+        // Mattress
+        this.ctx.fillStyle = '#8a6a5a';
+        this.ctx.fillRect(bedX, bedY, 280, 80);
+        
+        // Sheets with folds
+        this.ctx.fillStyle = '#d4a574';
+        this.ctx.fillRect(bedX, bedY + 20, 280, 60);
+        
+        // Sheet highlights
+        this.ctx.fillStyle = '#e4b584';
+        this.ctx.fillRect(bedX + 20, bedY + 25, 100, 15);
+        this.ctx.fillRect(bedX + 150, bedY + 35, 80, 10);
+        
+        // Pillow
+        this.ctx.fillStyle = '#f0e0d0';
+        this.ctx.fillRect(bedX + 20, bedY + 10, 100, 40);
+        
+        // Pillow shading
+        this.ctx.fillStyle = '#e0d0c0';
+        this.ctx.fillRect(bedX + 20, bedY + 30, 100, 20);
+        
+        // Blanket draped
+        this.ctx.fillStyle = '#7a5a4a';
+        this.ctx.fillRect(bedX + 150, bedY + 40, 130, 60);
+        
+        // DESK - Right side
+        const deskX = windowX - 200;
+        const deskY = floorY - 100;
+        
+        // Desk surface
+        this.ctx.fillStyle = '#6a4a3a';
+        this.ctx.fillRect(deskX, deskY, 180, 15);
+        
+        // Desk legs
+        this.ctx.fillStyle = '#5a3a2a';
+        this.ctx.fillRect(deskX + 10, deskY + 15, 15, 100);
+        this.ctx.fillRect(deskX + 155, deskY + 15, 15, 100);
+        
+        // Monitor on desk
+        this.ctx.fillStyle = '#1a1a2a';
+        this.ctx.fillRect(deskX + 50, deskY - 80, 80, 70);
+        
+        // Monitor screen (glowing)
+        const monitorGlow = this.ctx.createLinearGradient(deskX + 55, deskY - 75, deskX + 125, deskY - 15);
+        monitorGlow.addColorStop(0, '#4a6a8a');
+        monitorGlow.addColorStop(1, '#2a4a6a');
+        this.ctx.fillStyle = monitorGlow;
+        this.ctx.fillRect(deskX + 55, deskY - 75, 70, 60);
+        
+        // Monitor glow on wall
+        this.ctx.fillStyle = 'rgba(74, 106, 138, 0.2)';
+        this.ctx.beginPath();
+        this.ctx.arc(deskX + 90, deskY - 45, 60, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Monitor stand
+        this.ctx.fillStyle = '#1a1a2a';
+        this.ctx.fillRect(deskX + 80, deskY - 10, 20, 10);
+        
+        // Chair
+        const chairX = deskX + 50;
+        const chairY = floorY - 80;
+        
+        this.ctx.fillStyle = '#4a3a5a';
+        this.ctx.fillRect(chairX, chairY, 50, 15);
+        this.ctx.fillRect(chairX, chairY - 60, 50, 10);
+        this.ctx.fillRect(chairX + 20, chairY + 15, 10, 80);
+        
+        // BOOKSHELF - Far right
+        const shelfX = windowX + windowW + 20;
+        const shelfY = 150;
+        
+        if (shelfX < this.canvas.width - 100) {
+            this.ctx.fillStyle = '#5a3a2a';
+            this.ctx.fillRect(shelfX, shelfY, 80, 300);
+            
+            // Shelves
+            for (let i = 0; i < 5; i++) {
+                this.ctx.fillStyle = '#4a2a1a';
+                this.ctx.fillRect(shelfX, shelfY + i * 60, 80, 8);
+                
+                // Books
+                const colors = ['#8a4a3a', '#4a6a5a', '#6a5a7a', '#7a6a4a'];
+                for (let j = 0; j < 3; j++) {
+                    this.ctx.fillStyle = colors[Math.floor((i + j) % colors.length)];
+                    this.ctx.fillRect(shelfX + 5 + j * 25, shelfY + i * 60 + 10, 20, 45);
+                }
+            }
+        }
+        
+        // POSTERS on wall
+        const posterY = 200;
+        
+        // Poster 1
+        this.ctx.fillStyle = '#6a4a5a';
+        this.ctx.fillRect(100, posterY, 80, 100);
+        this.ctx.strokeStyle = '#2a1a2a';
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeRect(100, posterY, 80, 100);
+        
+        // Poster design
+        this.ctx.fillStyle = '#aa6a8a';
+        this.ctx.beginPath();
+        this.ctx.arc(140, posterY + 50, 25, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // LAMP with warm glow
+        const lampX = bedX + 290;
+        const lampY = floorY - 140;
+        
+        // Lamp base
+        this.ctx.fillStyle = '#3a2a1a';
+        this.ctx.fillRect(lampX, lampY + 40, 30, 10);
+        
+        // Lamp pole
+        this.ctx.fillStyle = '#4a3a2a';
+        this.ctx.fillRect(lampX + 13, lampY, 4, 40);
+        
+        // Lamp shade
+        this.ctx.fillStyle = '#8a6a4a';
+        this.ctx.beginPath();
+        this.ctx.moveTo(lampX + 5, lampY);
+        this.ctx.lineTo(lampX, lampY - 30);
+        this.ctx.lineTo(lampX + 30, lampY - 30);
+        this.ctx.lineTo(lampX + 25, lampY);
+        this.ctx.fill();
+        
+        // Warm lamp glow
+        this.ctx.fillStyle = 'rgba(255, 200, 100, 0.3)';
+        this.ctx.beginPath();
+        this.ctx.arc(lampX + 15, lampY - 15, 80, 0, Math.PI * 2);
         this.ctx.fill();
     }
 
     drawSections() {
         this.ctx.save();
         
-        // Floating sign that follows camera
+        // Floating info panel
         this.drawFloatingSign();
         
         this.drawCenterSection();
@@ -238,70 +339,91 @@ class SceneManager {
     }
 
     drawFloatingSign() {
-        // Sign always at top center of screen
+        // Wooden sign at top - drops down
         const signX = this.canvas.width / 2 - 200;
-        const signY = 30;
+        const signY = 20;
+        const dropY = Math.min(this.time * 100, 20);
         
-        this.ctx.fillStyle = 'rgba(139, 69, 19, 0.95)';
-        this.ctx.fillRect(signX, signY, 400, 60);
+        // Rope
+        this.ctx.strokeStyle = '#8B7355';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.moveTo(signX + 100, 0);
+        this.ctx.lineTo(signX + 100, dropY);
+        this.ctx.moveTo(signX + 300, 0);
+        this.ctx.lineTo(signX + 300, dropY);
+        this.ctx.stroke();
         
-        this.ctx.strokeStyle = '#5a3a1a';
-        this.ctx.lineWidth = 4;
-        this.ctx.strokeRect(signX, signY, 400, 60);
+        // 3D wooden board effect
+        this.ctx.fillStyle = '#5a3a1a';
+        this.ctx.fillRect(signX + 5, dropY + 5, 400, 70);
+        
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.fillRect(signX, dropY, 400, 70);
+        
+        // Wood grain
+        this.ctx.strokeStyle = '#6B3513';
+        this.ctx.lineWidth = 2;
+        for (let i = 0; i < 5; i++) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(signX, dropY + i * 15);
+            this.ctx.lineTo(signX + 400, dropY + i * 15);
+            this.ctx.stroke();
+        }
+        
+        // Border
+        this.ctx.strokeStyle = '#4a2a0a';
+        this.ctx.lineWidth = 5;
+        this.ctx.strokeRect(signX, dropY, 400, 70);
         
         this.ctx.fillStyle = '#FFD700';
         this.ctx.font = 'bold 24px Poppins';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText("Mayowa's Room", signX + 200, signY + 35);
+        this.ctx.shadowColor = '#000';
+        this.ctx.shadowBlur = 5;
+        this.ctx.fillText("Mayowa's Room", signX + 200, dropY + 35);
         
         this.ctx.fillStyle = '#FFF';
-        this.ctx.font = '14px Poppins';
-        this.ctx.fillText("← About Me | Games →", signX + 200, signY + 52);
+        this.ctx.font = '16px Poppins';
+        this.ctx.fillText("← About Me | Games →", signX + 200, dropY + 55);
+        this.ctx.shadowBlur = 0;
     }
 
     drawCenterSection() {
-        const sectionX = this.sections.center.x - this.cameraX;
-        
-        if (sectionX > -this.sections.center.width && sectionX < this.canvas.width) {
-            // Just character alone in center - no signs needed
-        }
+        // Character alone - no panels
     }
 
     drawAboutMeSection() {
         const sectionX = this.sections.aboutMe.x - this.cameraX;
         
         if (sectionX > -this.sections.aboutMe.width && sectionX < this.canvas.width) {
-            // Clean white panel
-            const panelWidth = 700;
-            const panelHeight = this.canvas.height - 280;
-            const panelX = this.canvas.width / 2 - panelWidth / 2;
-            const panelY = 110;
+            const panelW = 700;
+            const panelH = this.canvas.height - 280;
+            const panelX = this.canvas.width / 2 - panelW / 2;
+            const panelY = 120;
             
-            // Shadow
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            this.ctx.fillRect(panelX + 5, panelY + 5, panelWidth, panelHeight);
+            // 3D shadow
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            this.ctx.fillRect(panelX + 8, panelY + 8, panelW, panelH);
             
-            // White background
+            // White panel
             this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+            this.ctx.fillRect(panelX, panelY, panelW, panelH);
             
-            // Border
             this.ctx.strokeStyle = '#667eea';
-            this.ctx.lineWidth = 3;
-            this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+            this.ctx.lineWidth = 4;
+            this.ctx.strokeRect(panelX, panelY, panelW, panelH);
             
-            // Title
             this.ctx.fillStyle = '#667eea';
-            this.ctx.font = 'bold 36px Poppins';
+            this.ctx.font = 'bold 32px Poppins';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText("Welcome to Mayowa's Home!", panelX + panelWidth / 2, panelY + 50);
+            this.ctx.fillText("Welcome to Mayowa's Home!", panelX + panelW / 2, panelY + 45);
             
-            this.ctx.font = 'bold 24px Poppins';
-            this.ctx.fillText('About Me', panelX + panelWidth / 2, panelY + 85);
+            this.ctx.font = 'bold 22px Poppins';
+            this.ctx.fillText('About Me', panelX + panelW / 2, panelY + 80);
             
-            // Content
             this.ctx.fillStyle = '#333';
-            this.ctx.font = '16px Poppins';
+            this.ctx.font = '15px Poppins';
             this.ctx.textAlign = 'left';
             const lines = [
                 'Hello, my name is Mayowa. I am 17 years old and I am from Avon, Indiana.',
@@ -321,32 +443,21 @@ class SceneManager {
             ];
             
             lines.forEach((line, i) => {
-                this.ctx.fillText(line, panelX + 30, panelY + 125 + i * 24);
+                this.ctx.fillText(line, panelX + 30, panelY + 115 + i * 23);
             });
             
-            // Contact button
-            const btnX = panelX + panelWidth / 2 - 120;
-            const btnY = panelY + panelHeight - 50;
-            const btnWidth = 240;
-            const btnHeight = 40;
+            const btnX = panelX + panelW / 2 - 120;
+            const btnY = panelY + panelH - 55;
             
             this.ctx.fillStyle = '#667eea';
-            this.ctx.fillRect(btnX, btnY, btnWidth, btnHeight);
-            this.ctx.strokeStyle = '#764ba2';
-            this.ctx.lineWidth = 3;
-            this.ctx.strokeRect(btnX, btnY, btnWidth, btnHeight);
+            this.ctx.fillRect(btnX, btnY, 240, 45);
             
             this.ctx.fillStyle = '#FFF';
             this.ctx.font = 'bold 16px Poppins';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText('📧 Send Me a Message', btnX + btnWidth / 2, btnY + 25);
+            this.ctx.fillText('📧 Send Me a Message', btnX + 120, btnY + 28);
             
-            window.contactButton = {
-                x: btnX,
-                y: btnY,
-                width: btnWidth,
-                height: btnHeight
-            };
+            window.contactButton = { x: btnX, y: btnY, width: 240, height: 45 };
         }
     }
 
@@ -354,30 +465,25 @@ class SceneManager {
         const sectionX = this.sections.games.x - this.cameraX;
         
         if (sectionX > -this.sections.games.width && sectionX < this.canvas.width) {
-            // Clean white panel for games
-            const panelWidth = Math.min(900, this.canvas.width - 100);
-            const panelHeight = this.canvas.height - 280;
-            const panelX = this.canvas.width / 2 - panelWidth / 2;
-            const panelY = 110;
+            const panelW = 900;
+            const panelH = this.canvas.height - 280;
+            const panelX = this.canvas.width / 2 - panelW / 2;
+            const panelY = 120;
             
-            // Shadow
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            this.ctx.fillRect(panelX + 5, panelY + 5, panelWidth, panelHeight);
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            this.ctx.fillRect(panelX + 8, panelY + 8, panelW, panelH);
             
-            // White background
             this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+            this.ctx.fillRect(panelX, panelY, panelW, panelH);
             
-            // Border
             this.ctx.strokeStyle = '#667eea';
-            this.ctx.lineWidth = 3;
-            this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+            this.ctx.lineWidth = 4;
+            this.ctx.strokeRect(panelX, panelY, panelW, panelH);
             
-            // Title
             this.ctx.fillStyle = '#667eea';
             this.ctx.font = 'bold 36px Poppins';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText('My Games', panelX + panelWidth / 2, panelY + 50);
+            this.ctx.fillText('My Games', panelX + panelW / 2, panelY + 50);
             
             const games = [
                 { name: 'Flappy Bird', icon: '🐦', color: '#87CEEB' },
@@ -387,59 +493,46 @@ class SceneManager {
                 { name: 'Snake Race', icon: '🐍', color: '#98FB98' }
             ];
             
-            const cardWidth = 240;
-            const cardHeight = 180;
-            const gap = 30;
-            const startX = panelX + 50;
-            const startY = panelY + 90;
-            
             window.gameCards = [];
             
-            games.forEach((game, index) => {
-                const col = index % 3;
-                const row = Math.floor(index / 3);
-                const x = startX + col * (cardWidth + gap);
-                const y = startY + row * (cardHeight + gap);
+            const cardW = 230;
+            const cardH = 180;
+            const gap = 35;
+            const startX = panelX + 60;
+            const startY = panelY + 100;
+            
+            games.forEach((game, i) => {
+                const col = i % 3;
+                const row = Math.floor(i / 3);
+                const x = startX + col * (cardW + gap);
+                const y = startY + row * (cardH + gap);
                 
-                // Card shadow
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-                this.ctx.fillRect(x + 3, y + 3, cardWidth, cardHeight);
+                this.ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                this.ctx.fillRect(x + 4, y + 4, cardW, cardH);
                 
-                // Card background
                 this.ctx.fillStyle = '#f8f9fa';
-                this.ctx.fillRect(x, y, cardWidth, cardHeight);
+                this.ctx.fillRect(x, y, cardW, cardH);
                 
-                // Thumbnail
                 this.ctx.fillStyle = game.color;
-                this.ctx.fillRect(x, y, cardWidth, 120);
+                this.ctx.fillRect(x, y, cardW, 120);
                 
-                // Icon
                 this.ctx.font = '60px Arial';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText(game.icon, x + cardWidth / 2, y + 75);
+                this.ctx.fillText(game.icon, x + cardW / 2, y + 75);
                 
-                // Title
                 this.ctx.fillStyle = '#333';
                 this.ctx.font = 'bold 18px Poppins';
-                this.ctx.fillText(game.name, x + cardWidth / 2, y + 145);
+                this.ctx.fillText(game.name, x + cardW / 2, y + 145);
                 
-                // Subtitle
                 this.ctx.fillStyle = '#666';
                 this.ctx.font = '14px Poppins';
-                this.ctx.fillText('Click to play', x + cardWidth / 2, y + 165);
+                this.ctx.fillText('Click to play', x + cardW / 2, y + 165);
                 
-                // Border
                 this.ctx.strokeStyle = '#ddd';
                 this.ctx.lineWidth = 2;
-                this.ctx.strokeRect(x, y, cardWidth, cardHeight);
+                this.ctx.strokeRect(x, y, cardW, cardH);
                 
-                window.gameCards[index] = {
-                    x: x,
-                    y: y,
-                    width: cardWidth,
-                    height: cardHeight,
-                    game: game.name
-                };
+                window.gameCards[i] = { x, y, width: cardW, height: cardH, game: game.name };
             });
         }
     }
@@ -449,33 +542,20 @@ class Character {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
-        this.x = canvas.width / 2;
+        this.x = canvas.width / 2 - 200;
         this.y = canvas.height - 250;
-        this.height = 120;
-        this.width = 50;
-        this.frame = 0;
-        this.frameCount = 0;
-        this.isWalking = false;
-        this.facingRight = true;
-        this.walkSpeed = 6;
-        this.velocity = 0;
-        this.waveFrame = 0;
-        this.isWaving = true;
+        
+        // Character doesn't move on its own
+        this.isIdle = true;
         
         this.phrases = [
-            "Hi! Welcome to my room! 👋",
-            "Use Arrow Keys to explore!",
-            "Check out my projects!",
-            "Move around!",
-            "Games to the right!",
-            "About me to the left!"
+            "Welcome to my room! 🏠",
+            "Explore my portfolio!",
+            "Check out the games!",
+            "Read about me!"
         ];
         
         this.setupControls();
-        
-        setTimeout(() => {
-            this.isWaving = false;
-        }, 3000);
     }
 
     setupControls() {
@@ -483,7 +563,6 @@ class Character {
         
         window.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
-            this.isWaving = false;
             if(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
@@ -505,8 +584,8 @@ class Character {
     }
 
     isPointInCharacter(x, y) {
-        return x >= this.x - this.width / 2 && x <= this.x + this.width / 2 && 
-               y >= this.y - this.height && y <= this.y;
+        return x >= this.x - 40 && x <= this.x + 40 && 
+               y >= this.y - 120 && y <= this.y;
     }
 
     onCharacterClick() {
@@ -517,13 +596,6 @@ class Character {
             audioManager.play('click');
         }
         this.showSpeech(this.phrases[Math.floor(Math.random() * this.phrases.length)]);
-        if (this.velocity === 0) {
-            this.velocity = -15;
-        }
-        this.isWaving = true;
-        setTimeout(() => {
-            this.isWaving = false;
-        }, 2000);
     }
 
     showSpeech(text) {
@@ -544,174 +616,96 @@ class Character {
     }
 
     update() {
-        this.isWalking = false;
-        
+        // Character stays still - only camera moves
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) {
-            this.facingRight = false;
-            this.isWalking = true;
             if (window.sceneManager) {
-                sceneManager.moveCamera(-this.walkSpeed);
+                sceneManager.moveCamera(-6);
             }
         }
         
         if (this.keys['ArrowRight'] || this.keys['KeyD']) {
-            this.facingRight = true;
-            this.isWalking = true;
             if (window.sceneManager) {
-                sceneManager.moveCamera(this.walkSpeed);
+                sceneManager.moveCamera(6);
             }
-        }
-        
-        if ((this.keys['ArrowUp'] || this.keys['KeyW'] || this.keys['Space']) && this.velocity === 0) {
-            this.velocity = -15;
-        }
-        
-        this.velocity += 0.6;
-        this.y += this.velocity;
-        
-        const groundY = this.canvas.height - 250;
-        if (this.y >= groundY) {
-            this.y = groundY;
-            this.velocity = 0;
-        }
-        
-        if (this.isWalking) {
-            this.frameCount++;
-            if (this.frameCount % 8 === 0) {
-                this.frame = (this.frame + 1) % 2;
-            }
-        } else {
-            this.frameCount = 0;
-        }
-        
-        if (this.isWaving) {
-            this.waveFrame++;
         }
     }
 
     draw() {
         this.ctx.save();
         
-        const scale = 1;
-        const baseX = this.x;
-        const baseY = this.y;
-        
-        if (!this.facingRight) {
-            this.ctx.translate(baseX * 2, 0);
-            this.ctx.scale(-1, 1);
-        }
+        const x = this.x;
+        const y = this.y;
         
         // Shadow
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         this.ctx.beginPath();
-        this.ctx.ellipse(baseX, baseY + 5, 25, 8, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(x, y + 5, 30, 10, 0, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // REALISTIC PROPORTIONS - Taller character
-        const legMove = this.isWalking ? (this.frame === 0 ? -3 : 3) : 0;
+        // STANDING STILL - Detailed character
         
-        // Legs (jeans - blue)
+        // Legs
         this.ctx.fillStyle = '#4A90E2';
-        this.ctx.fillRect(baseX - 12, baseY - 50, 10, 45);
-        this.ctx.fillRect(baseX + 2, baseY - 50 + legMove, 10, 45 - Math.abs(legMove));
+        this.ctx.fillRect(x - 15, y - 60, 12, 55);
+        this.ctx.fillRect(x + 3, y - 60, 12, 55);
         
-        // Shoes (white sneakers)
+        // Shoes
         this.ctx.fillStyle = '#f5f5f5';
-        this.ctx.fillRect(baseX - 15, baseY - 5, 14, 8);
-        this.ctx.fillRect(baseX + 2, baseY - 5 + legMove, 14, 8);
+        this.ctx.fillRect(x - 18, y - 5, 15, 8);
+        this.ctx.fillRect(x + 3, y - 5, 15, 8);
         
-        // Shoe soles
-        this.ctx.fillStyle = '#333';
-        this.ctx.fillRect(baseX - 15, baseY + 3, 14, 2);
-        this.ctx.fillRect(baseX + 2, baseY + 3 + legMove, 14, 2);
-        
-        // Torso (blue shirt/hoodie)
+        // Torso
         this.ctx.fillStyle = '#2E5090';
-        this.ctx.fillRect(baseX - 18, baseY - 95, 36, 45);
-        
-        // Hoodie pocket
-        this.ctx.strokeStyle = '#1a3a6a';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(baseX - 12, baseY - 75, 24, 15);
-        
-        // Neck
-        this.ctx.fillStyle = '#C49A6C';
-        this.ctx.fillRect(baseX - 8, baseY - 100, 16, 8);
+        this.ctx.fillRect(x - 22, y - 110, 44, 50);
         
         // Arms
-        this.ctx.fillStyle = '#2E5090';
+        this.ctx.fillRect(x - 32, y - 105, 10, 40);
+        this.ctx.fillRect(x + 22, y - 105, 10, 40);
         
-        if (this.isWaving) {
-            // Waving right arm
-            const waveAngle = Math.sin(this.waveFrame * 0.2) * 30;
-            this.ctx.save();
-            this.ctx.translate(baseX + 18, baseY - 90);
-            this.ctx.rotate((waveAngle - 45) * Math.PI / 180);
-            this.ctx.fillRect(0, 0, 10, 35);
-            // Hand
-            this.ctx.fillStyle = '#C49A6C';
-            this.ctx.fillRect(0, 32, 10, 12);
-            this.ctx.restore();
-            
-            // Left arm
-            this.ctx.fillStyle = '#2E5090';
-            this.ctx.fillRect(baseX - 28, baseY - 90, 10, 35);
-            this.ctx.fillStyle = '#C49A6C';
-            this.ctx.fillRect(baseX - 28, baseY - 58, 10, 12);
-        } else {
-            const armSwing = this.isWalking ? (this.frame === 0 ? 3 : -3) : 0;
-            // Arms
-            this.ctx.fillRect(baseX - 28, baseY - 90 + armSwing, 10, 35);
-            this.ctx.fillRect(baseX + 18, baseY - 90 - armSwing, 10, 35);
-            
-            // Hands
-            this.ctx.fillStyle = '#C49A6C';
-            this.ctx.fillRect(baseX - 28, baseY - 58 + armSwing, 10, 12);
-            this.ctx.fillRect(baseX + 18, baseY - 58 - armSwing, 10, 12);
-        }
+        // Hands
+        this.ctx.fillStyle = '#C49A6C';
+        this.ctx.fillRect(x - 32, y - 68, 10, 12);
+        this.ctx.fillRect(x + 22, y - 68, 10, 12);
         
-        // Head (realistic proportions)
+        // Neck
+        this.ctx.fillRect(x - 10, y - 115, 20, 10);
+        
+        // Head
         this.ctx.fillStyle = '#8B5A3C';
         this.ctx.beginPath();
-        this.ctx.ellipse(baseX, baseY - 110, 16, 18, 0, 0, Math.PI * 2);
+        this.ctx.arc(x, y - 128, 18, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Hair (afro - larger and more detailed)
+        // Hair
         this.ctx.fillStyle = '#000';
         this.ctx.beginPath();
-        this.ctx.ellipse(baseX, baseY - 115, 22, 20, 0, Math.PI, 0);
+        this.ctx.arc(x, y - 133, 24, Math.PI, 0);
         this.ctx.fill();
         
-        // Hair sides
         this.ctx.beginPath();
-        this.ctx.ellipse(baseX - 18, baseY - 110, 14, 16, 0, 0, Math.PI * 2);
-        this.ctx.ellipse(baseX + 18, baseY - 110, 14, 16, 0, 0, Math.PI * 2);
+        this.ctx.arc(x - 20, y - 128, 16, 0, Math.PI * 2);
+        this.ctx.arc(x + 20, y - 128, 16, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Eyes (more realistic)
+        // Eyes
         this.ctx.fillStyle = '#FFF';
         this.ctx.beginPath();
-        this.ctx.ellipse(baseX - 6, baseY - 112, 3, 4, 0, 0, Math.PI * 2);
-        this.ctx.ellipse(baseX + 6, baseY - 112, 3, 4, 0, 0, Math.PI * 2);
+        this.ctx.arc(x - 7, y - 130, 4, 0, Math.PI * 2);
+        this.ctx.arc(x + 7, y - 130, 4, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Pupils
-        this.ctx.fillStyle = '#2a1a0a';
+        this.ctx.fillStyle = '#000';
         this.ctx.beginPath();
-        const pupilX = this.facingRight ? 1 : -1;
-        this.ctx.ellipse(baseX - 6 + pupilX, baseY - 112, 2, 3, 0, 0, Math.PI * 2);
-        this.ctx.ellipse(baseX + 6 + pupilX, baseY - 112, 2, 3, 0, 0, Math.PI * 2);
+        this.ctx.arc(x - 7, y - 130, 2, 0, Math.PI * 2);
+        this.ctx.arc(x + 7, y - 130, 2, 0, Math.PI * 2);
         this.ctx.fill();
-        
-        // Nose
-        this.ctx.fillStyle = '#6B4423';
-        this.ctx.fillRect(baseX + 2, baseY - 108, 3, 6);
         
         // Smile
         this.ctx.strokeStyle = '#000';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
-        this.ctx.arc(baseX, baseY - 103, 8, 0.2, Math.PI - 0.2);
+        this.ctx.arc(x, y - 120, 8, 0.2, Math.PI - 0.2);
         this.ctx.stroke();
         
         this.ctx.restore();
