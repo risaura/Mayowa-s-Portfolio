@@ -1,6 +1,15 @@
+console.log('Main.js loading...');
+
 // Main application
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// Make sure canvas exists
+if (!canvas) {
+    console.error('Canvas not found!');
+}
+
+console.log('Canvas found:', canvas);
 
 // Responsive canvas sizing
 function resizeCanvas() {
@@ -16,14 +25,20 @@ function resizeCanvas() {
         canvas.width = maxWidth;
         canvas.height = maxHeight;
     }
+    console.log('Canvas resized:', canvas.width, 'x', canvas.height);
 }
 
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 // Initialize scrolling scene manager
+console.log('Creating SceneManager...');
 window.sceneManager = new SceneManager(canvas);
+console.log('SceneManager created');
+
+console.log('Creating Character...');
 const character = new Character(canvas);
+console.log('Character created');
 
 // Current active game
 let currentGame = null;
@@ -48,6 +63,8 @@ canvas.addEventListener('click', (e) => {
     const clickX = (e.clientX - rect.left) * scaleX;
     const clickY = (e.clientY - rect.top) * scaleY;
     
+    console.log('Canvas clicked at:', clickX, clickY);
+    
     // Check contact button
     if (window.contactButton) {
         const btnScreenX = window.contactButton.worldX - sceneManager.cameraX;
@@ -55,6 +72,7 @@ canvas.addEventListener('click', (e) => {
         if (clickX >= btnScreenX && clickX <= btnScreenX + window.contactButton.width &&
             clickY >= window.contactButton.y && clickY <= window.contactButton.y + window.contactButton.height) {
             
+            console.log('Contact button clicked');
             document.getElementById('contactModal').style.display = 'block';
             
             if (window.audioManager) {
@@ -71,6 +89,7 @@ canvas.addEventListener('click', (e) => {
             if (clickX >= cardScreenX && clickX <= cardScreenX + card.width &&
                 clickY >= card.y && clickY <= card.y + card.height) {
                 
+                console.log('Game card clicked:', card.game);
                 startGame(card.game);
                 
                 if (window.audioManager) {
@@ -82,32 +101,32 @@ canvas.addEventListener('click', (e) => {
 });
 
 // Contact form handling
-document.getElementById('contactForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const name = document.getElementById('contactName').value;
-    const email = document.getElementById('contactEmail').value;
-    const message = document.getElementById('contactMessage').value;
-    
-    // In a real app, you'd send this to a server
-    // For now, just show success message
-    console.log('Contact form submitted:', { name, email, message });
-    
-    document.getElementById('contactForm').style.display = 'none';
-    document.getElementById('formSuccess').classList.remove('hidden');
-    
-    // Save to localStorage for demonstration
-    const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-    messages.push({ name, email, message, date: new Date().toISOString() });
-    localStorage.setItem('contactMessages', JSON.stringify(messages));
-    
-    setTimeout(() => {
-        document.getElementById('contactModal').style.display = 'none';
-        document.getElementById('contactForm').style.display = 'flex';
-        document.getElementById('formSuccess').classList.add('hidden');
-        document.getElementById('contactForm').reset();
-    }, 3000);
-});
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const name = document.getElementById('contactName').value;
+        const email = document.getElementById('contactEmail').value;
+        const message = document.getElementById('contactMessage').value;
+        
+        console.log('Contact form submitted:', { name, email, message });
+        
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('formSuccess').classList.remove('hidden');
+        
+        const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+        messages.push({ name, email, message, date: new Date().toISOString() });
+        localStorage.setItem('contactMessages', JSON.stringify(messages));
+        
+        setTimeout(() => {
+            document.getElementById('contactModal').style.display = 'none';
+            document.getElementById('contactForm').style.display = 'flex';
+            document.getElementById('formSuccess').classList.add('hidden');
+            document.getElementById('contactForm').reset();
+        }, 3000);
+    });
+}
 
 // Modal controls
 document.getElementById('closeContact').addEventListener('click', () => {
@@ -124,6 +143,7 @@ document.getElementById('closeAchievements').addEventListener('click', () => {
 
 // Achievements button
 document.getElementById('achievementsBtn').addEventListener('click', () => {
+    console.log('Achievements button clicked');
     document.getElementById('achievementsModal').style.display = 'block';
     if (window.achievementSystem) {
         achievementSystem.trackSectionVisit('achievements');
@@ -142,41 +162,36 @@ window.addEventListener('click', (e) => {
 
 // Music toggle achievement
 const musicToggle = document.getElementById('musicToggle');
-let musicToggled = false;
-musicToggle.addEventListener('click', () => {
-    if (!musicToggled && window.achievementSystem) {
-        achievementSystem.unlock('music_lover');
-        musicToggled = true;
-    }
-});
-
-// Reset achievements button
-document.getElementById('resetAchievements').addEventListener('click', () => {
-    if (window.achievementSystem) {
-        achievementSystem.reset();
-    }
-});
-
-// High score management
-function updateHighScores() {
-    const flappyScore = localStorage.getItem('flappyHighScore') || 0;
-    const pandaScore = localStorage.getItem('pandaHighScore') || 0;
-    const pongScore = localStorage.getItem('pongHighScore') || 0;
+if (musicToggle) {
+    console.log('Music toggle found');
+    let musicToggled = false;
+    musicToggle.addEventListener('click', () => {
+        console.log('Music toggle clicked');
+        if (!musicToggled && window.achievementSystem) {
+            achievementSystem.unlock('music_lover');
+            musicToggled = true;
+        }
+    });
+} else {
+    console.error('Music toggle not found!');
 }
 
-function saveHighScore(game, score) {
-    const currentHigh = parseInt(localStorage.getItem(`${game}HighScore`) || 0);
-    if (score > currentHigh) {
-        localStorage.setItem(`${game}HighScore`, score);
-    }
+// Reset achievements button
+const resetBtn = document.getElementById('resetAchievements');
+if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        if (window.achievementSystem) {
+            achievementSystem.reset();
+        }
+    });
 }
 
 function startGame(gameName) {
+    console.log('Starting game:', gameName);
     const miniCanvas = document.getElementById('miniGameCanvas');
     const gameTitle = document.getElementById('gameTitle');
     const gameInstructions = document.getElementById('gameInstructions');
     
-    // Clean up previous game
     if (currentGame && currentGame.cleanup) {
         currentGame.cleanup();
     }
@@ -186,40 +201,44 @@ function startGame(gameName) {
     
     gameTitle.textContent = gameName;
     
-    // Create new game instance
-    switch(gameName) {
-        case 'Flappy Bird':
-            currentGame = new FlappyBird(miniCanvas);
-            gameInstructions.innerHTML = 'Click or press SPACE to flap!<br>Avoid the pipes!';
-            runFlappyBird();
-            break;
-        case 'Panda':
-            currentGame = new Panda(miniCanvas);
-            gameInstructions.innerHTML = 'Use arrow keys to move<br>Eat bamboo to grow fatter!';
-            runPanda();
-            break;
-        case 'Pong':
-            currentGame = new Pong(miniCanvas);
-            gameInstructions.innerHTML = 'Use ↑↓ or W/S keys to move<br>First to 5 wins!';
-            runPong();
-            break;
-        case 'Pong 2P':
-            currentGame = new Pong2P(miniCanvas);
-            gameInstructions.innerHTML = 'Player 1: W/S keys | Player 2: ↑↓ keys<br>First to 5 wins!';
-            runPong();
-            break;
-        case 'Snake Race':
-            currentGame = new SnakeRace(miniCanvas);
-            gameInstructions.innerHTML = 'Player 1: WASD | Player 2: Arrow Keys<br>Race to the highest score!';
-            runPanda();
-            break;
-    }
-    
-    document.getElementById('gameModal').style.display = 'block';
-    currentGame.updateScoreDisplay();
-    
-    if (window.achievementSystem) {
-        achievementSystem.unlock('first_game');
+    try {
+        switch(gameName) {
+            case 'Flappy Bird':
+                currentGame = new FlappyBird(miniCanvas);
+                gameInstructions.innerHTML = 'Click or press SPACE to flap!<br>Avoid the pipes!';
+                runFlappyBird();
+                break;
+            case 'Panda':
+                currentGame = new Panda(miniCanvas);
+                gameInstructions.innerHTML = 'Use arrow keys to move<br>Eat bamboo to grow fatter!';
+                runPanda();
+                break;
+            case 'Pong':
+                currentGame = new Pong(miniCanvas);
+                gameInstructions.innerHTML = 'Use ↑↓ or W/S keys to move<br>First to 5 wins!';
+                runPong();
+                break;
+            case 'Pong 2P':
+                currentGame = new Pong2P(miniCanvas);
+                gameInstructions.innerHTML = 'Player 1: W/S keys | Player 2: ↑↓ keys<br>First to 5 wins!';
+                runPong();
+                break;
+            case 'Snake Race':
+                currentGame = new SnakeRace(miniCanvas);
+                gameInstructions.innerHTML = 'Player 1: WASD | Player 2: Arrow Keys<br>Race to the highest score!';
+                runPanda();
+                break;
+        }
+        
+        document.getElementById('gameModal').style.display = 'block';
+        currentGame.updateScoreDisplay();
+        
+        if (window.achievementSystem) {
+            achievementSystem.unlock('first_game');
+        }
+    } catch (error) {
+        console.error('Error starting game:', error);
+        alert('Error loading game: ' + error.message);
     }
 }
 
@@ -233,27 +252,20 @@ function closeGameModal() {
         cancelAnimationFrame(gameAnimationId);
     }
     
-    // Check for high scores and achievements
     if (currentGame && currentGame.score !== undefined) {
         if (currentGame.constructor.name === 'FlappyBird') {
-            saveHighScore('flappy', currentGame.score);
             if (window.achievementSystem) {
                 achievementSystem.checkFlappyScore(currentGame.score);
             }
         } else if (currentGame.constructor.name === 'Panda') {
-            saveHighScore('panda', currentGame.score);
             if (window.achievementSystem) {
                 achievementSystem.checkSnakeScore(currentGame.score);
             }
         }
     }
     
-    // Check Pong achievements
     if (currentGame && currentGame.constructor.name === 'Pong') {
-        if (currentGame.player.score > currentGame.ai.score) {
-            const wins = parseInt(localStorage.getItem('pongHighScore') || 0) + 1;
-            localStorage.setItem('pongHighScore', wins);
-            
+        if (currentGame.player && currentGame.player.score > currentGame.ai.score) {
             if (window.achievementSystem) {
                 achievementSystem.checkPongWin(currentGame.player.score, currentGame.ai.score);
             }
@@ -263,11 +275,14 @@ function closeGameModal() {
     currentGame = null;
 }
 
-document.getElementById('restartGame').addEventListener('click', () => {
-    if (currentGame) {
-        currentGame.reset();
-    }
-});
+const restartBtn = document.getElementById('restartGame');
+if (restartBtn) {
+    restartBtn.addEventListener('click', () => {
+        if (currentGame) {
+            currentGame.reset();
+        }
+    });
+}
 
 function runFlappyBird() {
     function loop() {
@@ -332,22 +347,24 @@ function runPong() {
 
 // Main game loop for scrolling world
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw scene
-    sceneManager.drawBackground();
-    sceneManager.drawGround();
-    sceneManager.drawSections();
-    
-    // Update and draw character
-    character.update();
-    character.draw();
-    
-    animationId = requestAnimationFrame(animate);
+    try {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        sceneManager.drawBackground();
+        sceneManager.drawGround();
+        sceneManager.drawSections();
+        
+        character.update();
+        character.draw();
+        
+        animationId = requestAnimationFrame(animate);
+    } catch (error) {
+        console.error('Animation error:', error);
+    }
 }
 
-// Initialize
-updateHighScores();
+// Start animation when page loads
+console.log('Starting animation...');
 animate();
 
 // Touch support
@@ -360,7 +377,6 @@ canvas.addEventListener('touchstart', (e) => {
     const touchX = (touch.clientX - rect.left) * scaleX;
     const touchY = (touch.clientY - rect.top) * scaleY;
     
-    // Check contact button
     if (window.contactButton) {
         const btnScreenX = window.contactButton.worldX - sceneManager.cameraX;
         
@@ -370,7 +386,6 @@ canvas.addEventListener('touchstart', (e) => {
         }
     }
     
-    // Check game cards
     if (window.gameCards) {
         window.gameCards.forEach(card => {
             const cardScreenX = card.worldX - sceneManager.cameraX;
@@ -382,8 +397,9 @@ canvas.addEventListener('touchstart', (e) => {
         });
     }
     
-    // Check character tap
     if (character.isPointInCharacter(touchX, touchY)) {
         character.onCharacterClick();
     }
 }, { passive: false });
+
+console.log('Main.js loaded successfully!');
