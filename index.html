@@ -8,8 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <!-- ═══════════ LOADING SCREEN ═══════════ -->
+    
     <div id="loader">
         <canvas id="loaderCanvas"></canvas>
         <div id="loaderUI">
@@ -24,7 +23,6 @@
         </div>
     </div>
 
-    <!-- ═══════════ HOME NEARBY NOTIFICATION (Google Maps style) ═══════════ -->
     <div id="homeNotif" class="home-notif hidden">
         <div class="home-notif-icon">🏠</div>
         <div class="home-notif-text">
@@ -34,7 +32,6 @@
         <div class="home-notif-arrow">→</div>
     </div>
 
-    <!-- ═══════════ HUD ═══════════ -->
     <div id="hud" class="hidden">
         <button id="musicToggle" class="hud-btn">🎵 Music: OFF</button>
         <button id="achievementsBtn" class="hud-btn">🏆 Achievements</button>
@@ -42,7 +39,6 @@
         <div id="timeDisplay" class="hud-time">☀️ Day</div>
     </div>
 
-    <!-- ═══════════ ACHIEVEMENT TOAST ═══════════ -->
     <div id="achievementToast" class="achievement-toast hidden">
         <div class="achievement-inner">
             <span class="achievement-icon-lg">🏆</span>
@@ -53,18 +49,14 @@
         </div>
     </div>
 
-    <!-- ═══════════ COIN TOAST ═══════════ -->
     <div id="coinToast" class="coin-toast hidden">🪙 +1 Coin Earned!</div>
 
-    <!-- ═══════════ MAIN CANVAS ═══════════ -->
     <canvas id="gameCanvas"></canvas>
-
-    <!-- ═══════════ SPEECH BUBBLE ═══════════ -->
+    
     <div id="speechBubble" class="speech-bubble hidden">
         <p id="speechText"></p>
     </div>
-
-    <!-- ═══════════ ABOUT ME MODAL ═══════════ -->
+    
     <div id="aboutModal" class="modal hidden">
         <div class="modal-content pixel-border about-modal-box">
             <button class="close-btn" data-close="aboutModal">&times;</button>
@@ -82,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- CONTACT FORM -->
             <div class="contact-section">
                 <h3 class="contact-title">📧 Send Me a Message</h3>
                 <form id="contactForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="contact-form">
@@ -97,7 +88,6 @@
                 </form>
             </div>
 
-            <!-- VISITOR COUNTER -->
             <div class="visitor-section">
                 <div class="visitor-badge">
                     👥 <span id="visitorCount">—</span> visitors
@@ -105,8 +95,7 @@
             </div>
         </div>
     </div>
-
-    <!-- ═══════════ GAMES MODAL ═══════════ -->
+    
     <div id="gamesModal" class="modal hidden">
         <div class="modal-content pixel-border wide-modal">
             <button class="close-btn" data-close="gamesModal">&times;</button>
@@ -147,7 +136,6 @@
         </div>
     </div>
 
-    <!-- ═══════════ ACHIEVEMENTS MODAL ═══════════ -->
     <div id="achievementsModal" class="modal hidden">
         <div class="modal-content pixel-border">
             <button class="close-btn" data-close="achievementsModal">&times;</button>
@@ -156,7 +144,6 @@
         </div>
     </div>
 
-    <!-- ═══════════ GAME PLAY MODAL ═══════════ -->
     <div id="gamePlayModal" class="modal hidden">
         <div class="modal-content pixel-border game-play-box">
             <div class="game-play-header">
@@ -171,7 +158,6 @@
         </div>
     </div>
 
-    <!-- ═══════════ ROOM MODAL ═══════════ -->
     <div id="roomModal" class="modal hidden">
         <div class="modal-content pixel-border room-modal-box">
             <button class="close-btn" data-close="roomModal">&times;</button>
@@ -181,7 +167,6 @@
         </div>
     </div>
 
-    <!-- ═══════════ VENDING MACHINE MODAL ═══════════ -->
     <div id="vendingModal" class="modal hidden">
         <div class="modal-content pixel-border vending-modal-box">
             <button class="close-btn" data-close="vendingModal">&times;</button>
@@ -199,26 +184,15 @@
         </div>
     </div>
 
-    <!-- ═══════════ FUN FACTS ═══════════ -->
     <div id="funFacts" class="fun-facts hidden">
         <div class="fun-facts-label">💡 FUN FACT</div>
         <div id="funFactText" class="fun-facts-text"></div>
     </div>
 
-    <!-- ═══════════ CONTROLS HINT ═══════════ -->
     <div id="controlsHint" class="controls-hint hidden">
         Use ← → arrow keys to move · Click signs, house &amp; vending machine to interact
     </div>
 
-    <!-- ═══════════ VISITOR TRACKING (FREE SERVICES) ═══════════ -->
-    <!--
-        SETUP INSTRUCTIONS:
-        1. Go to https://formspree.io — create free account, make a form,
-           replace YOUR_FORM_ID above with your real form ID
-        2. Go to https://goatcounter.com — sign up free, get your code,
-           replace YOUR_SITE below with your GoatCounter site name
-        3. Go to https://flagcounter.com — get your embed code for location tracking
-    -->
     <script data-goatcounter="https://portfoliomayowa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 
